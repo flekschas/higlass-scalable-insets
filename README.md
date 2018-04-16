@@ -1,11 +1,15 @@
-# GeoJSON Track for HiGlass
+# Scalable Insets for HiGlass
 
-> Display your favorite GeoJSON annotation right in HiGlass.
+> Explore your beloved 2D annotations with [Scalable Insets](http://scalable-insets.lekschas.de) in HiGlass
 
-[![HiGlass](https://img.shields.io/badge/higlass-👍-red.svg?colorB=0f5d92)](http://higlass.io)
-[![Build Status](https://img.shields.io/travis/flekschas/higlass-image/master.svg?colorB=0f5d92)](https://travis-ci.org/flekschas/higlass-image)
+[![HiGlass](https://img.shields.io/badge/higlass-👍-red.svg?colorB=ff2b00)](http://higlass.io)
+[![Scalable Insets](https://img.shields.io/badge/scalable%20insets-😍-red.svg?colorB=ff2b00)](http://scalable-insets.lekschas.de)
+[![Video](https://img.shields.io/badge/video-🎉-red.svg?colorB=ff2b00)](https://youtu.be/7Bn4mNLl3WQ)
+[![Build Status](https://img.shields.io/travis/flekschas/higlass-scalable-insets/master.svg?colorB=ff2b00)](https://travis-ci.org/flekschas/higlass-scalable-insets)
 
-**Note**: This is the source code for the GeoJSON track only! You might want to check out the following repositories as well:
+[Scalable Insets](http://scalable-insets.lekschas.de) is a new technique for interactively exploring and navigating large numbers of annotated patterns in multiscale visual spaces such as gigapixel images, matrices, or maps. Our technique visualizes annotated patterns too small to be identifiable at certain zoom levels using insets, i.e., magnified thumbnail views of the patterns. Find out more at [http://scalable-insets.lekschas.de](http://scalable-insets.lekschas.de) and watch our <5min introductory video at [https://youtu.be/7Bn4mNLl3WQ](https://youtu.be/7Bn4mNLl3WQ).
+
+**Note**: This is the source code for the Scalable Insets tracks only! You might want to check out the following repositories as well:
 
 - HiGlass viewer: https://github.com/hms-dbmi/higlass
 - HiGlass server: https://github.com/hms-dbmi/higlass-server
@@ -14,7 +18,7 @@
 ## Installation
 
 ```
-npm install higlass-image
+npm install higlass-scalable-insets
 ```
 
 ## Usage
@@ -22,7 +26,7 @@ npm install higlass-image
 1. Make sure you load this track prior to `hglib.js`. For example:
 
 ```
-<script src="higlass-image.js"></script>
+<script src="higlass-scalable-insets.js"></script>
 <script src="hglib.js"></script>
 <script>
   ...
@@ -34,35 +38,16 @@ npm install higlass-image
 ```
 {
   ...
-  center: [
-    {
-      uid: 'c1',
-      type: 'combined',
-      options: {},
-      contents: [
-        {
-          uid: 'my-fancy-tiled-image',
-          type: 'image-tiles',
-          server: 'http://localhost:8001/api/v1/',
-          tilesetUid: 'my-fancy-tiled-image',
-          options: {
-            name: 'My fancy tiled image'
-          }
-        },
-      ],
-    },
-  ],
-  ...
 }
 ```
 
-3. Finally, add `TiledImageTrack` to the option's `tracks` property when initializing HiGlass with `createHgComponent()` like so:
+3. Finally, add `Insets2dTrack` and `AnnotationsInsets` to the option's `tracks` property when initializing HiGlass with `createHgComponent()` like so:
 
 ```
 window.hglib.createHgComponent(
   document.getElementById('demo'),
   testViewConfig,
-  { tracks: ['TiledImageTrack'], bounded: true },
+  { tracks: ['Insets2dTrack', 'AnnotationsInsets'], bounded: true },
 );
 ```
 
@@ -73,7 +58,7 @@ Take a look at [`src/index.html`](src/index.html) for an example.
 ### Installation
 
 ```bash
-$ git clone https://github.com/flekschas/higlass-image && higlass-image
+$ git clone https://github.com/flekschas/higlass-scalable-insets && higlass-scalable-insets
 $ npm install
 ```
 
