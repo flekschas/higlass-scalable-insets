@@ -51,7 +51,14 @@
     "prerelease": "rm -rf dist/*; npm run build; zip -r dist.zip dist"
   },
   "dependencies": {
+    "d3-array": "^1.2.1",
+    "d3-color": "^1.1.0",
+    "d3-scale": "^2.0.0",
+    "fastpriorityqueue": "github:flekschas/FastPriorityQueue.js",
     "higlass-register": "^0.1.0",
+    "hull.js": "^0.2.10",
+    "liang-barsky": "^1.0.1",
+    "pixi-filters": "^2.6.0",
     "slugid": "^1.1.0"
   }
 }
