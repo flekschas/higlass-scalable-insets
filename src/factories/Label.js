@@ -1,7 +1,7 @@
 import { max, min, toInt } from '../utils';
 
 
-function Label(HGC, id, t = 1.0) {
+function Label(id, t = 1.0) {
   this.id = id;
   this.t = t;
 
