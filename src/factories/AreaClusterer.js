@@ -517,6 +517,8 @@ function update(elements, zoomed) {
 AreaClusterer.prototype = Object.create({}, {
   // Properties
   size: { get: getSize },
+});
+Object.assign(AreaClusterer.prototype, {
   // Methods
   add,
   addToOrCreateCluster,

@@ -278,12 +278,14 @@ function isWithin(
 
 /* ------------------------------ Inheritance ------------------------------- */
 
-AreaCluster.prototype = Object.create({}, {
+AreaCluster.prototype = Object.create(Object.prototype, {
   // Properties
   bounds: { get: getBounds },
   center: { get: getCenter },
   size: { get: getSize },
   type: { get: getType },
+});
+Object.assign(AreaCluster.prototype, {
   // Methods
   add,
   changed,

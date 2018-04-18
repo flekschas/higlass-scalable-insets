@@ -61,9 +61,11 @@ function setDim(width, height) {
 
 /* ------------------------------ Inheritance ------------------------------- */
 
-Label.prototype = Object.create(Label.prototype, {
+Label.prototype = Object.create(Object.prototype, {
   // Properties
   dataPos: { get: getDataPos },
+});
+Object.assign(Label.prototype, {
   // Methods
   connect,
   disconnect,

@@ -89,6 +89,8 @@ LabelCluster.prototype = Object.create(Label.prototype, {
   minY: { get: getMinY },
   maxY: { get: getMaxY },
   dataPos: { get: getDataPos },
+});
+Object.assign(LabelCluster.prototype, {
   // Methods
   compDimPos,
   connect,

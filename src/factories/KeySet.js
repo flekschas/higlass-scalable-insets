@@ -177,11 +177,13 @@ function* iterator() {
 
 /* ------------------------------ Inheritance ------------------------------- */
 
-KeySet.prototype = Object.create({}, {
+KeySet.prototype = Object.create(Object.prototype, {
   // Properties
   size: { get: getSize },
   keys: { get: getKeys },
   values: { get: getValues },
+});
+Object.assign(KeySet.prototype, {
   // Methods
   add,
   clear,

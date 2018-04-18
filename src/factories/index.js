@@ -1,7 +1,7 @@
 export { default as AreaClusterer } from './AreaClusterer';
 export { default as AreaCluster } from './AreaCluster';
 export { default as Annotation } from './Annotation';
-export { default as Insets } from './Insets';
+export { default as Inset } from './Inset';
 export { default as KeySet } from './KeySet';
 export { default as Label } from './Label';
 export { default as LabelCluster } from './LabelCluster';

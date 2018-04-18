@@ -101,12 +101,14 @@ function setImportance(importance) {
 
 /* ------------------------------ Inheritance ------------------------------- */
 
-Annotation.prototype = Object.create({}, {
+Annotation.prototype = Object.create(Object.prototype, {
   // Properties
   center: { get: getCenter },
   dataCenter: { get: getDataCenter },
   dataPos: { get: getDataPosition },
   viewPos: { get: getViewPos },
+});
+Object.assign(Annotation.prototype, {
   // Methods
   setViewPosition,
   getDataPosition,

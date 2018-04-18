@@ -41,6 +41,8 @@ function updateOrigin() {
 LabelClusterGallery.prototype = Object.create(LabelCluster.prototype, {
   // Properties
   // ...
+});
+Object.assign(LabelClusterGallery.prototype, {
   // Methods
   setLeftCloser,
   setXY,
