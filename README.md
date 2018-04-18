@@ -9,11 +9,12 @@
 
 [Scalable Insets](http://scalable-insets.lekschas.de) is a new technique for interactively exploring and navigating large numbers of annotated patterns in multiscale visual spaces such as gigapixel images, matrices, or maps. Our technique visualizes annotated patterns too small to be identifiable at certain zoom levels using insets, i.e., magnified thumbnail views of the patterns. Find out more at [http://scalable-insets.lekschas.de](http://scalable-insets.lekschas.de) and watch our <5min introductory video at [https://youtu.be/7Bn4mNLl3WQ](https://youtu.be/7Bn4mNLl3WQ).
 
-**Note**: This is the source code for the Scalable Insets tracks only! You might want to check out the following repositories as well:
+![Image of Scalable Insets](http://scalable-insets.lekschas.de/images/teaser.jpg)
+
+**Note**: This is the source code for the Scalable Insets tracks only! You might want to check out the following repositories as well if you want to know how Scalable Insets is integrated into HiGlass.
 
 - HiGlass viewer: https://github.com/hms-dbmi/higlass
 - HiGlass server: https://github.com/hms-dbmi/higlass-server
-- HiGlass docker: https://github.com/hms-dbmi/higlass-docker
 
 ## Installation
 
