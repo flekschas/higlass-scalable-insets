@@ -67,3 +67,23 @@ $ npm install
 
 **Developmental server**: `npm start`
 **Production build**: `npm run build`
+
+If you need to work on HiGlass and Scalable Insets in parallel I suggest the following setup:
+
+1. Link a local HiGlass instance:
+
+```
+git clone https://github.com/hms-dbmi/higlass && cd higlass && npm install
+npm link
+npm run build
+```
+
+2. Open another terminal, link the HiGlass instance and start the web server
+
+```
+cd higlass-scalable-insets
+npm link higlass
+npm start
+```
+
+Now whenever you make changes to your local HiGlass instance it will be re-build and also trigger a re-build of the Scalable Insets track.
