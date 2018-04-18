@@ -67,9 +67,10 @@ module.exports = {
           {
             loader: 'css-loader',
             options: {
-              importLoaders: 1,
+              importLoaders: 2,
               minimize: { safe: true },
               url: false,
+              modules: true,
             },
           },
           {
