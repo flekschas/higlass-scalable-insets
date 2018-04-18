@@ -11,10 +11,12 @@
 
 ![Image of Scalable Insets](http://scalable-insets.lekschas.de/images/teaser.jpg)
 
-**Note**: This is the source code for the Scalable Insets tracks only! You might want to check out the following repositories as well if you want to know how Scalable Insets is integrated into HiGlass.
+**Note**: This is the source code for the Scalable Insets tracks only! You might want to check out the following repositories as well if you want to know how Scalable Insets is integrated into HiGlass or use it with images or geographic maps:
 
 - HiGlass viewer: https://github.com/hms-dbmi/higlass
 - HiGlass server: https://github.com/hms-dbmi/higlass-server
+- HiGlass image track: https://github.com/flekschas/higlass-image
+- HiGlass GeoJSON track: https://github.com/flekschas/higlass-geojson
 
 ## Installation
 
@@ -66,9 +68,12 @@ $ npm install
 ### Commands
 
 **Developmental server**: `npm start`
+
 **Production build**: `npm run build`
 
-If you need to work on HiGlass and Scalable Insets in parallel I suggest the following setup:
+### Co-Development with HiGlass
+
+If you need to work on HiGlass and Scalable Insets in parallel I recommend the following setup:
 
 1. Link a local HiGlass instance:
 
