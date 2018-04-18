@@ -13,6 +13,13 @@ module.exports = {
     libraryTarget: 'umd',
     path: path.resolve(__dirname, 'dist'),
   },
+  devServer: {
+    contentBase: [
+      path.join(__dirname, 'dist'),
+      path.join(__dirname, 'node_modules/higlass/build'),
+    ],
+    watchContentBase: true,
+  },
   optimization: {
     minimizer: [
       new UglifyJsPlugin({
