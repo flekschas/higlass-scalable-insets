@@ -64,12 +64,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
       }
 
       this.updateBoundsBound = this.updateBounds.bind(this);
-      this.updateBoundsBound = this.updateBounds.bind(this);
       this.zoomHandlerBound = this.zoomHandler.bind(this);
-
-      this.insetsTrack.subscribe('dimensions', this.updateBoundsBound);
-      this.insetsTrack.subscribe('position', this.updateBoundsBound);
-      this.insetsTrack.subscribe('zoom', this.zoomHandlerBound);
 
       this.excludeTracks = this.options.excludeTracks || [];
 
@@ -92,11 +87,6 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
 
       this.annotationDrawnHandlerBound = this.annotationDrawnHandler.bind(this);
 
-      // Augment annotation tracks
-      this.annotationTracks.forEach((track) => {
-        track.subscribe('annotationDrawn', this.annotationDrawnHandlerBound);
-      });
-
       this.currK = 1;  // Current scale
       this.drawnAnnoIds = new Set();
       this.annosToBeDrawnAsInsets = new KeySet('id');
@@ -107,10 +97,6 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
       this.initTree();
 
       this.pubSubs = [];
-      this.pubSubs.push(pubSub.subscribe(
-        'TiledPixiTrack.tilesDrawnEnd',
-        this.tilesDrawnEndHandler.bind(this),
-      ));
 
       // Yet another transformation (oh lord please let this be the last one...)
       // Some coordinate systems (so far only geography) displays the original
@@ -122,7 +108,6 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
       this.projectorX = this.insetsTrack.dataType === 'osm-image'
         ? lng => lngToX(lng, 19)
         : identity;
-
       this.projectorY = this.insetsTrack.dataType === 'osm-image'
         ? lat => latToY(lat, 19)
         : identity;
@@ -163,6 +148,21 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
       this.midInsetSize = (this.minInsetSize + this.maxInsetSize) / 2;
 
       this.updateBounds();
+
+      // Start listening to things
+      this.insetsTrack.subscribe('dimensions', this.updateBoundsBound);
+      this.insetsTrack.subscribe('position', this.updateBoundsBound);
+      this.insetsTrack.subscribe('zoom', this.zoomHandlerBound);
+
+      // Augment annotation tracks
+      this.annotationTracks.forEach((track) => {
+        track.subscribe('annotationDrawn', this.annotationDrawnHandlerBound);
+      });
+
+      this.pubSubs.push(pubSub.subscribe(
+        'TiledPixiTrack.tilesDrawnEnd',
+        this.tilesDrawnEndHandler.bind(this),
+      ));
     }
 
     /**
