@@ -15,7 +15,6 @@ module.exports = {
   },
   devServer: {
     contentBase: [
-      path.join(__dirname, 'dist'),
       path.join(__dirname, 'node_modules/higlass/build'),
     ],
     watchContentBase: true,
