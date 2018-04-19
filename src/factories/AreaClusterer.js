@@ -1,7 +1,7 @@
-import AreaCluster, { nearestNeighbor } from './AreaCluster';
+import AreaCluster from './AreaCluster';
 import KeySet from './KeySet';
 
-import { insert, lDist, max, min } from '../utils';
+import { findNearestNeighbor, insert, lDist, max, min } from '../utils';
 
 
 function AreaClusterer(options = {}) {
@@ -372,7 +372,7 @@ function splitCluster(cluster) {
   newCluster.add(fnn.a);
 
   let srcNode = fnn.a;
-  let [nn] = nearestNeighbor(cluster.members.values, srcNode);
+  let [nn] = findNearestNeighbor(cluster.members.values, srcNode);
   // Re-evaluate distance between nearest neighbor
   let d = lDist(nn.center, srcNode.center);
 
@@ -383,7 +383,7 @@ function splitCluster(cluster) {
     cluster.fnns.array.forEach(removeIfNn);
 
     srcNode = nn;
-    [nn] = nearestNeighbor(cluster.members.values, srcNode);
+    [nn] = findNearestNeighbor(cluster.members.values, srcNode);
     d = lDist(nn.center, srcNode.center);
   }
 

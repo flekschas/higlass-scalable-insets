@@ -2,41 +2,13 @@ import FastPriorityQueue from 'fastpriorityqueue';
 
 import KeySet from './KeySet';
 
-import { lDist, max, min } from '../utils';
+import { findNearestNeighbor, lDist, max, min } from '../utils';
 
 /**
  * Generate a random HEX string
  * @return  {string}  Random HEX string.
  */
 const rndHex = () => Math.floor((1 + Math.random()) * 0x10000000).toString(16);
-
-/**
- * Find nearest neighbor in a brute-force fashion. This has been shown to be
- *   fasted for up to thousand points.
- *   https://github.com/mikolalysenko/static-kdtree#comparisons
- * @param   {array}  points  Array of `Annotation`s.
- * @param   {Annotation}  query  A single `Annotation` as the query.
- * @return  {array}  Tuple holding the nearest neighbor and distance.
- */
-const nearestNeighbor = (points, query) => {
-  const q = query.dataCenter;
-
-  let minD = Infinity;
-  let minP = null;
-  let d;
-
-  for (let i = 0, m = points.length; i < m; i++) {
-    if (points[i] === q) continue;  // eslint-disable-line
-
-    d = lDist(points[i].dataCenter, q);
-    if (d < minD) {
-      minD = d;
-      minP = points[i];
-    }
-  }
-
-  return [minP, minD];
-};
 
 /**
  * A cluster that contains annotations.
@@ -224,7 +196,7 @@ function updateBounds(area) {
 }
 
 function updateFnns(annotation) {
-  const [nn, d] = nearestNeighbor(this.members.values, annotation);
+  const [nn, d] = findNearestNeighbor(this.members.values, annotation);
 
   if (!nn) return;
 
