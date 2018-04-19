@@ -1,7 +1,7 @@
 {
   "name": "higlass-scalable-insets",
   "version": "0.1.0",
-  "description": "Scalable Insets for HiGlass",
+  "description": "Scalable Insets for highlighting and exploring annotations in HiGlass",
   "private": true,
   "author": "Fritz Lekschas",
   "license": "MIT",
@@ -45,6 +45,7 @@
     "uglifyjs-webpack-plugin": "^1.2.5",
     "unminified-webpack-plugin": "^2.0.0",
     "webpack": "^4.6.0",
+    "webpack-bundle-analyzer": "^2.11.1",
     "webpack-cli": "^2.0.13",
     "webpack-dev-server": "^3.1.1"
   },
@@ -54,14 +55,13 @@
     "prerelease": "rm -rf dist/*; npm run build; zip -r dist.zip dist"
   },
   "dependencies": {
-    "d3-array": "^1.2.1",
+    "@pixi/filter-drop-shadow": "^2.6.0",
     "d3-color": "^1.1.0",
     "d3-scale": "^2.0.0",
     "fastpriorityqueue": "github:flekschas/FastPriorityQueue.js",
     "higlass-register": "^0.1.0",
     "hull.js": "^0.2.10",
     "liang-barsky": "^1.0.1",
-    "pixi-filters": "^2.6.0",
     "slugid": "^1.1.0"
   }
 }

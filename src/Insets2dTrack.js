@@ -1,6 +1,6 @@
 import { color as d3Color } from 'd3-color';
 import { scaleLinear, scaleLog } from 'd3-scale';
-import { DropShadowFilter } from 'pixi-filters';
+import { DropShadowFilter } from '@pixi/filter-drop-shadow';
 
 import { Inset, KeySet } from './factories';
 
@@ -116,8 +116,6 @@ const Insets2dTrack = (HGC, ...args) => {
         color: 0x000000,
         alpha: this.options.dropOpacity,
       });
-
-      this.isRenderToCanvas = this.options.isRenderToCanvas || false;
 
       this.pBase.alpha = this.options.opacity;
       this.pMain.filters = [this.dropShadow];
@@ -284,7 +282,6 @@ const Insets2dTrack = (HGC, ...args) => {
       inset.size(label.width, label.height);
       inset.setBorderScale(borderScale);
       inset.setRenderer(this.rendererInset.bind(this));
-      inset.renderTo(this.isRenderToCanvas ? 'canvas' : 'html');
 
       return inset.draw();
     }
@@ -467,16 +464,9 @@ const Insets2dTrack = (HGC, ...args) => {
       addClass(this.baseElement, style['inset-track-non-smooth-transitions']);
     }
 
-    mouseDownInsetHandler(event, inset) {
-      if (this.isRenderToCanvas) {
-        this.hoveringInsetIdx = this.pMain.getChildIndex(inset.gMain);
-        this.pMain.setChildIndex(inset.gMain, this.pMain.children.length - 1);
-        this.animate();
-      }
-    }
+    mouseDownInsetHandler(/* event, inset */) {}
 
-    mouseDownRightInsetHandler(/* event, inset */) {
-    }
+    mouseDownRightInsetHandler(/* event, inset */) {}
 
     mouseUpHandler() {
       removeClass(
@@ -484,12 +474,7 @@ const Insets2dTrack = (HGC, ...args) => {
       );
     }
 
-    mouseUpInsetHandler(event, inset) {
-      if (this.isRenderToCanvas) {
-        this.pMain.setChildIndex(inset.gMain, this.hoveringInsetIdx);
-        this.animate();
-      }
-    }
+    mouseUpInsetHandler(/* event, inset */) {}
 
     mouseUpRightInsetHandler(/* event, inset */) {}
 
