@@ -1,4 +1,3 @@
-import { range } from 'd3-array';
 import { scaleQuantize } from 'd3-scale';
 
 // Factories
@@ -16,6 +15,7 @@ import {
   max,
   min,
   positionLabels,
+  range,
   scoreAtPercentile,
 } from './utils';
 
