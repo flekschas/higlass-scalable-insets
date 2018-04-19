@@ -1,6 +1,7 @@
 const path = require('path');
 
 const autoprefixer = require('autoprefixer');
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
@@ -121,5 +122,14 @@ module.exports = {
       filename: './index.html',
     }),
     new UnminifiedWebpackPlugin(),
+    // new BundleAnalyzerPlugin(),
   ],
+  externals: {
+    'pixi.js': {
+      commonjs: 'pixi.js',
+      commonjs2: 'pixi.js',
+      amd: 'pixi.js',
+      root: 'PIXI',
+    },
+  },
 };
