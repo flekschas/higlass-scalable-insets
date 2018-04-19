@@ -1,4 +1,3 @@
-import { bisectLeft } from 'd3-array';
 import { color as d3Color } from 'd3-color';
 import hull from 'hull.js';
 import clip from 'liang-barsky';
@@ -7,12 +6,11 @@ import { BROKEN_LINK, RESET } from '../icons';
 
 import {
   addEventListenerOnce,
-  canvasLinearGradient,
   coterminalAngleRad,
   createIcon,
-  degToRad,
   getAngleBetweenPoints,
   getClusterPropAcc,
+  indexOf,
   lDist,
   max,
   min,
@@ -36,11 +34,6 @@ const getBaseRes = tilesetInfo => (
   (2 ** tilesetInfo.max_zoom) /
   tilesetInfo.bins_per_dimension
 );
-
-const pixiToOrigEvent = f => event => f(event.data.originalEvent);
-
-// To be removed
-const transitionGroup = () => {};
 
 // Coming from HiGlass
 let PIXI;
@@ -78,7 +71,6 @@ export default class Inset {
     this.options = options;
     this.mouseHandler = mouseHandler;
     this.dataType = dataType;
-    this.isRenderToCanvas = true;
 
     this.isMatrix = this.dataType === 'cooler';
     this.t = this.isMatrix ? -1 : 1;
@@ -255,11 +247,7 @@ export default class Inset {
    */
   blur(isPermanent = false) {
     this.isPermanentFocus = isPermanent ? false : this.isPermanentFocus;
-    if (this.isRenderToCanvas) {
-      this.clearBorder();
-    } else {
-      removeClass(this.border, style['inset-focus']);
-    }
+    removeClass(this.border, style['inset-focus']);
     this.drawBorder();
     Object.keys(this.indicator).forEach((id) => {
       this.renderIndicator(id);
@@ -301,8 +289,8 @@ export default class Inset {
     const finalWidth = width + (2 * borderWidthExtra);
     const finalHeight = height + (2 * borderWidthExtra);
 
-    const finalX = vX - (this.isRenderToCanvas ? borderWidthExtra : 0);
-    const finalY = vY - (this.isRenderToCanvas ? borderWidthExtra : 0);
+    const finalX = vX;
+    const finalY = vY;
 
     this.positionBorder(
       finalX,
@@ -322,17 +310,12 @@ export default class Inset {
     return borderWidthExtra;
   }
 
-  styleBorder(...args) {
-    if (this.isRenderToCanvas) return;
-    this.styleBorderHtml(...args);
-  }
-
   /**
    * Style the HTML border
    * @param   {number}  radius  Radius of the corner in pixel.
    * @param   {D3.Color}  fill  Fill color.
    */
-  styleBorderHtml(fill, radius, extraWidth = 0) {
+  styleBorder(fill, radius, extraWidth = 0) {
     const isScaleFocus = this.options.isFocusBorderOnScale && this.isScaledUp;
     const _fill = this.isPermanentFocus || isScaleFocus
       ? this.focusColor : fill;
@@ -351,36 +334,13 @@ export default class Inset {
   }
 
   /**
-   * Position border. Just a helper function forwarding the call to the canvas
-   *   or HTML positioner.
-   */
-  positionBorder(...args) {
-    if (this.isRenderToCanvas) return this.positionBorderCanvas(...args);
-    return this.positionBorderHtml(...args);
-  }
-
-  /**
-   * Position border for drawing on canvas
-   * @param  {number}  x  X position in pixel.
-   * @param  {number}  y  Y position in pixel.
-   * @param  {number}  width  Width of the border in pixel.
-   * @param  {number}  height  Height of the border in pixel.
-   */
-  positionBorderCanvas(x, y, width, height) {
-    this.border.x = x + this.globalOffsetX;
-    this.border.y = y + this.globalOffsetY;
-    this.border.width = width;
-    this.border.height = height;
-  }
-
-  /**
    * Position border for drawing on HTML
    * @param  {number}  x  X position in pixel.
    * @param  {number}  y  Y position in pixel.
    * @param  {number}  width  Width of the border in pixel.
    * @param  {number}  height  Height of the border in pixel.
    */
-  positionBorderHtml(x, y, width, height, dX = 0, dY = 0) {
+  positionBorder(x, y, width, height, dX = 0, dY = 0) {
     if (width) this.border.style.width = `${width}px`;
     if (height) this.border.style.height = `${height}px`;
     this.border.__transform__.translate = [
@@ -390,45 +350,9 @@ export default class Inset {
   }
 
   /**
-   * Render border. Just a helper function forwarding the call to the canvas
-   *   or HTML positioner.
-   */
-  renderBorder(...args) {
-    if (this.isRenderToCanvas) return this.renderBorderCanvas(...args);
-    return this.renderBorderHtml(...args);
-  }
-
-  /**
-   * Render border on canvas
-   * @param  {number}  x  X position in pixel.
-   * @param  {number}  y  Y position in pixel.
-   * @param  {number}  width  Width of the border in pixel.
-   * @param  {number}  height  Height of the border in pixel.
-   * @param  {number}  radius  Radius of the corner in pixel.
-   * @param  {D3.Color}  fill  Fill color.
-   * @param  {PIXI.Graphics}  graphics  Graphics to draw on
-   */
-  renderBorderCanvas(x, y, width, height, radius, fill, graphics) {
-    const ratio = width / height;
-    const maxBorderSize = this.maxSize * this.onClickScale * this.scaleBase;
-    if (this.tweenStop) this.tweenStop();
-    this.border = this.createRect(
-      (ratio >= 1
-        ? maxBorderSize
-        : maxBorderSize * ratio) + this.borderPadding,
-      (ratio <= 1
-        ? maxBorderSize
-        : maxBorderSize / ratio) + this.borderPadding,
-      radius,
-      fill,
-    );
-    graphics.addChild(this.border);
-  }
-
-  /**
    * Render border on HTML.
    */
-  renderBorderHtml() {
+  renderBorder() {
     this.border = this.border || document.createElement('div');
     // The CSS transform rule is annoying because it combines multiple
     // properties into one definition string so when updating one of those we
@@ -778,7 +702,7 @@ export default class Inset {
     });
 
     this.finalRes = this.remoteSizes.map((remoteSize) => {
-      const entry = resolutionCustomLocSorted[bisectLeft(
+      const entry = resolutionCustomLocSorted[indexOf(
         resolutionCustomLocSorted, remoteSize,
       )];
 
@@ -869,31 +793,27 @@ export default class Inset {
     this.data = null;
     this.img = null;
 
-    if (this.isRenderToCanvas) {
-      this.border = null;
-    } else {
-      this.removeEventListeners();
-      this.baseElement.removeChild(this.border);
-      this.baseElement.removeChild(this.leaderLine);
-      this.border = null;
-      this.leaderLine = null;
-      this.leaderLineStubA = null;
-      this.leaderLineStubB = null;
-      this.imgsRendering = null;
-      this.prvsRendering = null;
-      this.imgData = null;
-      this.prvData = [];
-      this.imgs = [];
-      this.prvs = [];
-      this.prvWrappers = [];
-      this.imgWrappers = [];
-      this.imgRatios = [];
-      this.imgsWrapper = null;
-      this.imgsWrapperLeft = null;
-      this.imgsWrapperRight = null;
-      this.prvsWrapper = null;
-      this.indicator = {};
-    }
+    this.removeEventListeners();
+    this.baseElement.removeChild(this.border);
+    this.baseElement.removeChild(this.leaderLine);
+    this.border = null;
+    this.leaderLine = null;
+    this.leaderLineStubA = null;
+    this.leaderLineStubB = null;
+    this.imgsRendering = null;
+    this.prvsRendering = null;
+    this.imgData = null;
+    this.prvData = [];
+    this.imgs = [];
+    this.prvs = [];
+    this.prvWrappers = [];
+    this.imgWrappers = [];
+    this.imgRatios = [];
+    this.imgsWrapper = null;
+    this.imgsWrapperLeft = null;
+    this.imgsWrapperRight = null;
+    this.prvsWrapper = null;
+    this.indicator = {};
   }
 
   /**
@@ -1018,58 +938,6 @@ export default class Inset {
   }
 
   /**
-   * Render the leader line between the inset and the origin.
-   * @return  {array}  List of PIXI.Sprite objects of the leader line.
-   */
-  renderLeaderLine(
-    pointFrom, pointTo, dist, color = this.options.leaderLineColor,
-  ) {
-    if (this.options.leaderLineStubLength) {
-      return this.renderLeaderLineStubs(pointFrom, pointTo, dist, color);
-    }
-
-    if (this.options.leaderLineFading) {
-      return this.renderLeaderLineGrd(pointFrom, pointTo, dist, color);
-    }
-
-    return this.renderLeaderLinePlain(pointFrom, pointTo, dist, color);
-  }
-
-  /**
-   * Render plain leader line. Just a forwader to the canvas and HTML renderer.
-   */
-  renderLeaderLinePlain(...args) {
-    if (this.isRenderToCanvas) return this.renderLeaderLinePlainCanvas(...args);
-    return this.renderLeaderLineHtml(...args);
-  }
-
-  /**
-   * Render plain leader line on canvas.
-   * @param   {array}  pointFrom  Tuple in form of `[x,y]`.
-   * @param   {array}  pointTo  Tuple in form of `[x,y]`.
-   */
-  renderLeaderLinePlainCanvas(pointFrom, pointTo) {
-    this.gLeaderLine.clear();
-    this.gLeaderLine.lineStyle(
-      this.leaderLineStyle[0],
-      this.isHovering ? colorToHex(this.focusColor) : this.leaderLineStyle[1],
-      this.leaderLineStyle[2],
-    );
-
-    // Origin
-    this.gLeaderLine.moveTo(
-      pointFrom[0] + this.globalOffsetX,
-      pointFrom[1] + this.globalOffsetY,
-    );
-
-    // Inset position
-    this.gLeaderLine.lineTo(
-      pointTo[0] + this.globalOffsetX,
-      pointTo[1] + this.globalOffsetY,
-    );
-  }
-
-  /**
    * Render all types of leader lines on HTML.
    * @param   {array}  pointFrom  Tuple in form of `[x,y]`.
    * @param   {array}  pointTo  Tuple in form of `[x,y]`.
@@ -1077,7 +945,7 @@ export default class Inset {
    *   `pointTo`.
    * @param   {D3.Color}  color  Color.
    */
-  renderLeaderLineHtml(pointFrom, pointTo, dist, color) {
+  renderLeaderLine(pointFrom, pointTo, dist, color) {
     if (this.options.leaderLineOnHoverOnly && !this.isHovering) {
       if (this.leaderLine && this.leaderLine.parentNode === this.baseElement) {
         this.baseElement.removeChild(this.leaderLine);
@@ -1257,132 +1125,6 @@ export default class Inset {
     ) ? ctAngle : newAngle;
 
     return this.leaderLineAngle;
-  }
-
-  /**
-   * Render gradient leader line. Just a forwader to the canvas and HTML
-   *   renderer.
-   */
-  renderLeaderLineGrd(...args) {
-    if (this.isRenderToCanvas) return this.renderLeaderLineGrdCanvas(...args);
-    return this.renderLeaderLineHtml(...args);
-  }
-
-  /**
-   * Render fading leader line a relative multistep color gradient.
-   * @param   {array}  pointFrom  Tuple of form [x,y].
-   * @param   {array}  pointTo  Tuple of form [x,y].
-   * @param   {object}  color  RGBA D3 color object.
-   * @return  {array}  List of PIXI.Sprite objects of the leader line.
-   */
-  renderLeaderLineGrdCanvas(
-    pointFrom, pointTo, color = this.options.leaderLineColor,
-  ) {
-    const _color = d3Color((this.isHovering
-      ? this.options.focusColor
-      : color
-    ));
-
-    const colorSteps = {};
-    Object.keys(this.options.leaderLineFading).forEach((step) => {
-      _color.opacity = this.options.leaderLineFading[step];
-      colorSteps[step] = _color.toString();
-    });
-
-    const gradient = new PIXI.Sprite(
-      PIXI.Texture.fromCanvas(canvasLinearGradient(
-        lDist(pointFrom, pointTo),
-        this.options.leaderLineWidth || 2,
-        colorSteps,
-      )),
-    );
-    // Set the rotation center to [0, half height]
-    gradient.pivot.set(0, this.options.leaderLineWidth / 2);
-
-    gradient.x = pointTo[0] + this.globalOffsetX;
-    gradient.y = pointTo[1] + this.globalOffsetY;
-    gradient.rotation = getAngleBetweenPoints(
-      [this.originX, this.originY],
-      [this.x, this.y],
-    );
-
-    this.gLeaderLine.removeChildren();
-    this.gLeaderLine.addChild(gradient);
-
-    this.gLeaderLineGrd = [gradient];
-
-    return this.gLeaderLineGrd;
-  }
-
-  /**
-   * Render stub leader line. Just a forwader to the canvas and HTML renderer.
-   */
-  renderLeaderLineStubs(...args) {
-    if (this.isRenderToCanvas) return this.renderLeaderLineStubsCanvas(...args);
-    return this.renderLeaderLineHtml(...args);
-  }
-
-  /**
-   * Render leader line stubs consisting of two absolute-sized color gradients.
-   * @param   {array}  pointFrom  Tuple of form [x,y].
-   * @param   {array}  pointTo  Tuple of form [x,y].
-   * @param   {object}  color  RGBA D3 color object.
-   * @return  {array}  List of PIXI.Sprite objects of the leader line.
-   */
-  renderLeaderLineStubsCanvas(
-    pointFrom, pointTo, color = this.options.leaderLineColor,
-  ) {
-    const _color = d3Color((this.isHovering
-      ? this.options.focusColor
-      : color
-    ));
-
-    const colorFrom = Object.assign(_color.rgb(), { opacity: 1 }).toString();
-    const colorTo = Object.assign(_color.rgb(), { opacity: 0 }).toString();
-
-    const dist = lDist(pointFrom, pointTo);
-    const width = Math.max(
-      this.options.leaderLineStubLength,
-      dist * (1 - this.relD),
-    );
-    const lineWidth = (
-      this.leaderLineStubWidthMin
-      + (this.leaderLineStubWidthVariance * this.relD)
-    );
-
-    const gradient = PIXI.Texture.fromCanvas(canvasLinearGradient(
-      width,
-      lineWidth || 2,
-      { 0: colorFrom, 1: colorTo },
-    ));
-
-    const angle = getAngleBetweenPoints(
-      [this.originX, this.originY],
-      [this.x, this.y],
-    );
-
-    const gradientFrom = new PIXI.Sprite(gradient);
-    const gradientTo = new PIXI.Sprite(gradient);
-
-    // Set the rotation center to [0, half height]
-    gradientFrom.pivot.set(0, this.options.leaderLineWidth / 2);
-    gradientTo.pivot.set(0, this.options.leaderLineWidth / 2);
-
-    gradientFrom.x = pointTo[0];
-    gradientFrom.y = pointTo[1];
-    gradientFrom.rotation = angle;
-
-    gradientTo.x = pointFrom[0];
-    gradientTo.y = pointFrom[1];
-    gradientTo.rotation = angle + degToRad(180);
-
-    this.gLeaderLine.removeChildren();
-    this.gLeaderLine.addChild(gradientFrom);
-    this.gLeaderLine.addChild(gradientTo);
-
-    this.gLeaderLineGrd = [gradientFrom, gradientTo];
-
-    return this.gLeaderLineGrd;
   }
 
   /**
@@ -1587,11 +1329,7 @@ export default class Inset {
    */
   focus(isPermanent = false) {
     this.isPermanentFocus = isPermanent ? true : this.isPermanentFocus;
-    if (this.isRenderToCanvas) {
-      this.clearBorder();
-    } else {
-      addClass(this.border, style['inset-focus']);
-    }
+    addClass(this.border, style['inset-focus']);
     this.drawBorder(
       this.x,
       this.y,
@@ -1612,7 +1350,7 @@ export default class Inset {
    *   snippet.
    */
   getPaddingLoci(remoteSize) {
-    const entry = this.paddingLociCustomLocSorted[bisectLeft(
+    const entry = this.paddingLociCustomLocSorted[indexOf(
       this.paddingLociCustomLocSorted, remoteSize,
     )];
 
@@ -1625,7 +1363,7 @@ export default class Inset {
    *   snippet.
    */
   getPadding(remoteSize) {
-    const entry = this.paddingCustomLocSorted[bisectLeft(
+    const entry = this.paddingCustomLocSorted[indexOf(
       this.paddingCustomLocSorted, remoteSize,
     )];
 
@@ -2075,54 +1813,26 @@ export default class Inset {
   }
 
   /**
-   * Position the main image. Forwarder to the respective canvas and HTML
-   *   functions.
-   */
-  positionImage(...args) {
-    if (this.isRenderToCanvas) return this.positionImageCanvas(...args);
-    return this.positionImageHtml(...args);
-  }
-
-  /**
-   * Position the image on the canvas, i.e., apply the view [x,y] position and
-   *   the final image scales.
-   * @param  {Number}  x  X position of the inset to be drawn.
-   * @param  {Number}  y  Y position of the inset to be drawn.
-   * @param  {Number}  width  Width of the inset to be drawn.
-   * @param  {Number}  height  Height of the inset to be drawn.
-   */
-  positionImageCanvas(
-    x = this.x, y = this.y, width = this.width, height = this.height,
-  ) {
-    const pos = this.computeImagePosition(x, y, width, height);
-
-    this.img.x = pos.x;
-    this.img.y = pos.y;
-    this.img.scale.x = pos.scaleX;
-    this.img.scale.y = pos.scaleY;
-  }
-
-  /**
    * Adjusts the ratio of the image
    */
-  positionImageHtml() {
+  positionImage() {
     if (!this.imgData.length) return;
 
     switch (this.imgData.length) {
       case 1:
-        this.positionImageOneHtml();
+        this.positionImageOne();
         break;
 
       case 2:
-        this.positionImageTwoHtml();
+        this.positionImageTwo();
         break;
 
       case 3:
-        this.positionImageThreeHtml();
+        this.positionImageThree();
         break;
 
       case 4:
-        this.positionImageFourHtml();
+        this.positionImageFour();
         break;
 
       default:
@@ -2130,18 +1840,18 @@ export default class Inset {
     }
   }
 
-  positionImageOneHtml() {
+  positionImageOne() {
     const ratio = (this.imgData[0].height / this.imgData[0].width) * 100;
     this.imgRatios[0].style.paddingTop = `${ratio}%`;
   }
 
-  positionImageTwoHtml() {
+  positionImageTwo() {
     this.imgRatios.forEach((el) => { el.style.paddingTop = '100%'; });
     this.imgsWrapperRight.className =
       `${style['inset-images-wrapper-right']} ${style['inset-images-wrapper-right-grow']}`;
   }
 
-  positionImageThreeHtml() {
+  positionImageThree() {
     this.imgRatios.forEach((el) => { el.style.paddingTop = '100%'; });
     this.imgsWrapperLeft.className =
       `${style['inset-images-wrapper-left']} ${style['inset-images-wrapper-left-three']}`;
@@ -2149,7 +1859,7 @@ export default class Inset {
       `${style['inset-images-wrapper-right']} ${style['inset-images-wrapper-right-grow']}`;
   }
 
-  positionImageFourHtml() {
+  positionImageFour() {
     this.imgRatios.forEach((el) => { el.style.paddingTop = '100%'; });
     this.imgsWrapperLeft.className =
       `${style['inset-images-wrapper-left']} ${style['inset-images-wrapper-left-four']}`;
@@ -2158,15 +1868,6 @@ export default class Inset {
   }
 
   /**
-   * Position the main image. Forwarder to the respective canvas and HTML
-   *   functions.
-   */
-  positionPreviews(...args) {
-    if (this.isRenderToCanvas) return this.positionPreviewsCanvas(...args);
-    return this.positionPreviewsHtml(...args);
-  }
-
-  /**
    * Position the image of the previews, i.e., apply the view [x,y] position
    *   and the final image scales.
    * @param  {Number}  x  X position of the inset to be drawn.
@@ -2174,92 +1875,18 @@ export default class Inset {
    * @param  {Number}  width  Width of the inset to be drawn.
    * @param  {Number}  height  Height of the inset to be drawn.
    */
-  positionPreviewsCanvas(
-    x = this.x, y = this.y, width = this.width, height = this.height,
-  ) {
-    if (!this.prvs) return;
-
-    const pos = this.computePreviewsPosition(x, y, width, height);
-
-    this.prvs.forEach((preview, i) => {
-      const prevHeight = Math.abs(pos.scaleY);
-      const yOffset = ((prevHeight + this.previewSpacing) * (i + 1));
-
-      preview.x = pos.x;
-      preview.y = pos.y + yOffset;
-      preview.scale.x = pos.scaleX;
-      preview.scale.y = pos.scaleY;
-    });
-  }
-
-  /**
-   * Position the image of the previews, i.e., apply the view [x,y] position
-   *   and the final image scales.
-   * @param  {Number}  x  X position of the inset to be drawn.
-   * @param  {Number}  y  Y position of the inset to be drawn.
-   * @param  {Number}  width  Width of the inset to be drawn.
-   * @param  {Number}  height  Height of the inset to be drawn.
-   */
-  positionPreviewsHtml() {
+  positionPreviews() {
     if (!this.prvsWrapper) return;
 
     this.prvsWrapper.style.height = `${this.compPrvsHeight()}px`;
   }
 
   /**
-   * Render the main image and assign event listeners. This is just a
-   *   forwarder to the specific method for the canvas or html methods.
-   */
-  renderImage(...args) {
-    if (this.isRenderToCanvas) return this.renderImageCanvas(...args);
-    return this.renderImageHtml(...args);
-  }
-
-  /**
    * Render the main image and assign event listeners.
    *
    * @param  {Array}  data  Data to be rendered
    */
-  renderImageCanvas(data, force) {
-    if ((this.img && !force) || !data.length || this.isDestroyed) {
-      return Promise.resolve();
-    }
-
-    if (this.imgRendering) return this.imgRendering;
-
-    this.imgRendering = this.renderer(data[0], this.dataTypes[0])
-      .then((renderedImg) => {
-        if (this.isDestroyed) return;
-
-        this.imgData = renderedImg;
-
-        this.img = new PIXI.Sprite(
-          PIXI.Texture.fromCanvas(
-            renderedImg, PIXI.SCALE_MODES.NEAREST,
-          ),
-        );
-
-        this.img.interactive = true;
-        this.img
-          .on('mousedown', pixiToOrigEvent(this.mouseDownHandler.bind(this)))
-          .on('mouseover', pixiToOrigEvent(this.mouseOverHandler.bind(this)))
-          .on('mouseout', pixiToOrigEvent(this.mouseOutHandler.bind(this)))
-          .on('mouseup', pixiToOrigEvent(this.mouseUpHandler.bind(this)))
-          .on('rightdown', pixiToOrigEvent(this.mouseDownRightHandler.bind(this)))
-          .on('rightup', pixiToOrigEvent(this.mouseUpRightHandler.bind(this)));
-
-        this.gMain.addChild(this.img);
-      });
-
-    return this.imgRendering;
-  }
-
-  /**
-   * Render the main image and assign event listeners.
-   *
-   * @param  {Array}  data  Data to be rendered
-   */
-  renderImageHtml(data, idx, force, requestId) {
+  renderImage(data, idx, force, requestId) {
     if (
       !data ||
       (this.imgs.length === data.length && !force) ||
@@ -2436,63 +2063,11 @@ export default class Inset {
   }
 
   /**
-   * Render the previews and assign event listeners. This is just a
-   *   forwarder to the specific method for the canvas or html methods.
-   */
-  renderPreviews(...args) {
-    if (this.isRenderToCanvas) return this.renderPreviewsCanvas(...args);
-    return this.renderPreviewsHtml(...args);
-  }
-
-  /**
    * Render the data to an image and assign event listeners.
    *
    * @param  {Array}  data  Data to be rendered
    */
-  renderPreviewsCanvas(data, force) {
-    if (
-      !data ||
-      (this.prvs.length === data.length && !force) ||
-      !data.length ||
-      this.isDestroyed
-    ) return Promise.resolve();
-
-    if (this.prvsRendering) return this.prvsRendering;
-
-    this.prvsRendering = Promise.all(data
-      .map((preview, i) => this.renderer(preview, this.dataTypes[0])
-        .then((renderedImg) => {
-          if (this.isDestroyed) return;
-
-          this.prvData[i] = renderedImg;
-
-          this.prvs[i] = new PIXI.Sprite(
-            PIXI.Texture.fromCanvas(
-              renderedImg, PIXI.SCALE_MODES.NEAREST,
-            ),
-          );
-
-          this.prvs[i].interactive = true;
-          this.prvs[i]
-            .on('mousedown', pixiToOrigEvent(this.mouseDownHandler.bind(this)))
-            .on('mouseover', pixiToOrigEvent(this.mouseOverHandler.bind(this)))
-            .on('mouseout', pixiToOrigEvent(this.mouseOutHandler.bind(this)))
-            .on('mouseup', pixiToOrigEvent(this.mouseUpHandler.bind(this)))
-            .on('rightdown', pixiToOrigEvent(this.mouseDownRightHandler.bind(this)))
-            .on('rightup', pixiToOrigEvent(this.mouseUpRightHandler.bind(this)));
-
-          this.gMain.addChild(this.prvs[i]);
-        })));
-
-    return this.prvsRendering;
-  }
-
-  /**
-   * Render the data to an image and assign event listeners.
-   *
-   * @param  {Array}  data  Data to be rendered
-   */
-  renderPreviewsHtml(data1d, data2d, force, requestId) {
+  renderPreviews(data1d, data2d, force, requestId) {
     if (
       !data1d ||
       (this.prvs.length === data1d.length && !force) ||
@@ -2554,18 +2129,6 @@ export default class Inset {
     return this.prvsRendering;
   }
 
-  renderTo(target) {
-    switch (target) {
-      case 'html':
-        this.isRenderToCanvas = false;
-        break;
-
-      default:
-        this.isRenderToCanvas = true;
-        break;
-    }
-  }
-
   enableTransition(unset = false) {
     if (unset) {
       this.isTransitioning = false;
@@ -2574,89 +2137,6 @@ export default class Inset {
       this.isTransitioning = true;
       addClass(this.border, style['inset-fast-transition']);
     }
-  }
-
-  /**
-   * Scale the inset. This is just a forwarder to the specific method for the
-   *   canvas or html methods.
-   */
-  scale(...args) {
-    if (this.isRenderToCanvas) return this.scaleCanvas(...args);
-    return this.scaleHtml(...args);
-  }
-
-  /**
-   * Scale the inset.
-   * @param  {Number}  amount  Amount by which to scale the inset
-   */
-  scaleCanvas(amount = 1) {
-    if (this.tweenStop) this.tweenStop();
-
-    this.scaleExtra = amount;
-    this.offsetX = this.width * (amount - 1) / -2;
-    this.offsetY = this.height * (amount - 1) / -2;
-
-    const imPos = this.computeImagePosition();
-
-    const prevHeight = this.prvs.length
-      ? ((this.prvs.length - 1) * this.previewSpacing) + 1
-      : 0;
-
-    const bWidth = (
-      this.imgData.width * imPos.scaleX * this.t
-    ) + this.borderPadding;
-    const bHeight = (
-      this.imgData.height * Math.abs(imPos.scaleY)
-    ) + this.borderPadding;
-
-    const [bX, bY] = this.computeBorderPosition(
-      this.x,
-      this.y,
-      bWidth,
-      bHeight,
-      this.borderPadding,
-      true,
-    );
-
-    const previewTweenDefs = this.prvs.map((sprite, i) => ({
-      obj: sprite,
-      propsTo: {
-        x: imPos.x,
-        y: imPos.y + ((Math.abs(imPos.scaleY) + this.previewSpacing) * (i + 1)),
-        scale: {
-          x: imPos.scaleX,
-          y: imPos.scaleY,
-        },
-      },
-    }));
-
-    this.tweenStop = transitionGroup(
-      [
-        {
-          obj: this.img,
-          propsTo: {
-            x: imPos.x,
-            y: imPos.y,
-            scale: {
-              x: imPos.scaleX,
-              y: imPos.scaleY,
-            },
-          },
-        },
-        {
-          obj: this.border,
-          propsTo: {
-            x: bX,
-            y: bY,
-            // Not sure why we need the `+1`. Maybe an interpolation problem?
-            width: bWidth + 1,
-            height: bHeight + prevHeight + 1,
-          },
-        },
-        ...previewTweenDefs,
-      ],
-      80,
-    );
   }
 
   /**
@@ -2707,7 +2187,7 @@ export default class Inset {
    *
    * @param  {Number}  amount  Amount by which to scale the inset
    */
-  scaleHtml(amount = 1, isOriginMinded = false) {
+  scale(amount = 1, isOriginMinded = false) {
     if (this.scaleExtra === amount) return;
     this.enableTransition();
     this.checkTransformOrigin();
