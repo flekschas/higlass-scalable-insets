@@ -4,7 +4,7 @@ import { DropShadowFilter } from '@pixi/filter-drop-shadow';
 
 import { Inset, KeySet } from './factories';
 
-import { lDist, max, min } from './utils';
+import { lDist, max, mercatorTransform, min } from './utils';
 
 import style from './Insets2dTrack.module.scss';
 
@@ -229,12 +229,16 @@ const Insets2dTrack = (HGC, ...args) => {
         dataPosBounds[3] += height * 0.25;
       }
 
+      const transform = this.dataType
+        ? mercatorTransform
+        : null;
+
       pubSub.publish(
         'zoomToDataPos',
         {
           pos: dataPosBounds,
           animateTime: ZOOM_TO_ANNO, // animation time. 0 === disabled
-          isMercator: this.dataType === 'osm-image',
+          transform,
         },
       );
     }

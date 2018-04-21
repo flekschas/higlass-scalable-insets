@@ -9,6 +9,7 @@ export { default as identity } from './identity';
 export { default as indexOf } from './index-of';
 export { default as insert } from './insert';
 export { default as max } from './max';
+export { default as mercatorTransform } from './mercator-transform';
 export { default as min } from './min';
 export { default as objToTransformStr } from './obj-to-transform-str';
 export { default as positionLabels } from './position-labels';
