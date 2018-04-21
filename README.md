@@ -44,16 +44,6 @@ npm install higlass-scalable-insets
 }
 ```
 
-3. Finally, add `Insets2dTrack` and `AnnotationsInsets` to the option's `tracks` property when initializing HiGlass with `createHgComponent()` like so:
-
-```
-window.hglib.createHgComponent(
-  document.getElementById('demo'),
-  testViewConfig,
-  { tracks: ['Insets2dTrack', 'AnnotationsInsets'], bounded: true },
-);
-```
-
 Take a look at [`src/index.html`](src/index.html) for an example.
 
 ## Development
