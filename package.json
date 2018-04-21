@@ -4,9 +4,10 @@
   "description": "Scalable Insets for highlighting and exploring annotations in HiGlass",
   "keywords": [
     "HiGlass",
+    "Track",
     "Insets",
     "Annotations",
-    "Patterns",
+    "Patterns"
   ],
   "author": "Fritz Lekschas",
   "license": "MIT",
@@ -16,6 +17,10 @@
       "url": "http://github.com/flekschas"
     }
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/flekschas/higlass-scalable-insets.git"
+  },
   "main": "src/index.js",
   "unpkg": "dist/higlass-scalable-insets.min.js",
   "files": [
