@@ -2,7 +2,6 @@
   "name": "higlass-scalable-insets",
   "version": "0.1.0",
   "description": "Scalable Insets for highlighting and exploring annotations in HiGlass",
-  "private": true,
   "author": "Fritz Lekschas",
   "license": "MIT",
   "contributors": [
@@ -52,7 +51,7 @@
   "scripts": {
     "build": "webpack --mode production",
     "start": "webpack-dev-server --mode development --open",
-    "prerelease": "rm -rf dist/*; npm run build; zip -r dist.zip dist"
+    "prerelease": "rm -rf dist/*; npm run build"
   },
   "dependencies": {
     "@pixi/filter-drop-shadow": "^2.6.0",
