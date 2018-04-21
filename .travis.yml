@@ -10,3 +10,22 @@ before_script:
 - npm install
 before_deploy:
 - npm run prerelease
+deploy:
+  - provider: releases
+    skip_cleanup: true
+    api_key:
+      secure: Ru2N3onePiU579E3XlT98y5fI/sFo5aH0SliVpjAZ036zXwiQC2QflBjqxe6rafwtWsmb4hYOs2ngA5Cm4IQGo8y0DbE7dxElWzjmZi/9rz2ug3MCHnuINfSEKxAI2W+PGMEHctd3Ldc9fDNvpqRXflsSoY8PO53Ivu27mWYjKF6wG62lsX0T9R1nMqG+1JuualME89H7U8HEk6ZS2WaAIeY4gce3V1MPnk5dl7I3W7bDdDKX274zDBq0AVH9t9X+sTVSWHWFBD0cAYMIfhajjSZP6Qu69SYUS3BpEPfozZBB/pnJGMTrGz0lqYxM/84qmZG3isXraFHMQCJCkkrTqdv3EOCqwu2mum6lBdcOCyyNPQwPhN6ibyz3AgGUCM4zt1L5lN5UHWPS/uqmSc7Va/Y/oYW4X7Zdq4AeuJ6mejjL30RKbtAOzZbp8IU4P8786Q+KcTPJNSAUr/7Hqzsk8WYogNcxu+1nHyTnkl+ARZOcDl1kl66H6pigru1s8oKKnhzP05ndRIP55HtgrsBtv7asyfii+qiUGcoe370f/BkAwX5C/2rdsoMCmFZtMZyWC+QkANXEXGTkGs2ImcsIyMuyCydNNiiVw6SA+pZLoRPIbGYxnHkhn04aDhqMVZ6zZlIIaezbXJfvzH44x+V3a3kTDdS6T8kPsw3Kq9LeBo=
+    file: dist.zip
+    on:
+      branch: master
+      tags: true
+      repo: flekschas/higlass-scalable-insets
+  - provider: npm
+    skip_cleanup: true
+    email: service@lekschas.de
+    api_key:
+      secure: YJ6DjGumZXo7tTPixWrv2DpyKl2rCqSEXoHLop0vXT/IbF2eU4PMJ6tvSqgdIi0CkLViX+u3zUEQBh1UqBdjn5JgsmVQTq57TChDnqk5YB8yVRl1RaYUGzS4/pcvqVoBai+tAgUWdCIsPS4uAinu+95VsAg+GLFK5xn9vxoq91vnlxyaFbKNtCrVpSt4cKSu/UmhxcMqzFnYZs5p2h0KuIWhSfDskfaiYypKWakhdm5UL3mTnLwUAzWQ8nr8Ah4QxPIUzlpytbWcKQxjaYT0TJD9mgqGW+peCggoDrSFjNY94i4848YbT5htuYNcNHKFsaKc8TvLp/6KeZ+aq9q40fInDBfFe1I4sF7+0brSNU6dCsL/shn0ruo9i5ygN7fFpoa7HMxl3lIniI16k0DIzX+oJncP86RohVhBvrNkQ9qmX/CNSoehShv6qkY6lVVpEfcSqda8it4jG6gy0xIUmPYmn9a8UdQaCySVH+NIrsLLxcZqeCVuIHD7KKYBEiZ7RkGerGEnsXYUk6y9mPgyvatNXKok2XS1gxLz2HdIAdkd+1ljtVQsuXLhyf/CIH5kghxahIpjpgEnPbgCm+QQCBVhMQgPnjqVT5z5gf9wODNZzmvYReForKvyxTDsRAswUvHg/FqErNwj/KmxGJoM3uE9cqH8nBxz3DbA9hY5bRk=
+    on:
+      branch: master
+      tags: true
+      repo: flekschas/higlass-scalable-insets
