@@ -2,6 +2,12 @@
   "name": "higlass-scalable-insets",
   "version": "0.1.0",
   "description": "Scalable Insets for highlighting and exploring annotations in HiGlass",
+  "keywords": [
+    "HiGlass",
+    "Insets",
+    "Annotations",
+    "Patterns",
+  ],
   "author": "Fritz Lekschas",
   "license": "MIT",
   "contributors": [
