@@ -846,7 +846,7 @@ export default class Inset {
       this.x, this.y, this.width, this.height,
     );
 
-    this.positionBorderHtml(vX + dX, vY + dY);
+    this.positionBorder(vX + dX, vY + dY);
     this.drawLeaderLine(this.x + dX, this.y + dY);
   }
 
@@ -1102,7 +1102,7 @@ export default class Inset {
       this.x, this.y, this.width, this.height,
     );
 
-    this.positionBorderHtml(vX, vY);
+    this.positionBorder(vX, vY);
     this.drawLeaderLine(this.x, this.y);
     this.blur();
   }
