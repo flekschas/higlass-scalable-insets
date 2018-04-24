@@ -6,7 +6,7 @@ import { geoMercator } from 'd3-geo';
  * @param   {function}  yScale  HiGlass' yScale.
  * @return  {array}  Tuple of mercator projected x and y scales.
  */
-const mercatorTransform - (xScale, yScale) => {
+const mercatorTransform = (xScale, yScale) => {
   // Create scaled mercator projection for lng / lat to view coords.
   const mercator = geoMercator()
     .scale((xScale(180) - xScale(-180)) / 2 / Math.PI)
@@ -16,4 +16,6 @@ const mercatorTransform - (xScale, yScale) => {
     x => mercator([x, 0])[0],  // modified xScale
     y => mercator([0, y])[1],  // modified yScale
   ];
-}
+};
+
+export default mercatorTransform;
