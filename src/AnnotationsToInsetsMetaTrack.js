@@ -74,11 +74,14 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
         .map((uid) => {
           const track = getTrackByUid(uid);
 
-          if (!track) console.warn(`Child track (uid: ${uid}) not found`);
-          else this.annotationTrackIds.add(track.uuid);
+          if (!track) {
+            console.warn(`Child track (uid: ${uid}) not found`);
+          } else {
+            this.annotationTrackIds.add(track.uuid);
 
-          if (this.excludeTracks.indexOf(uid) >= 0) {
-            this.annotationTrackIdsExcluded.add(track.uuid);
+            if (this.excludeTracks.indexOf(uid) >= 0) {
+              this.annotationTrackIdsExcluded.add(track.uuid);
+            }
           }
 
           return track;
