@@ -59,7 +59,7 @@ const Insets2dTrack = (HGC, ...args) => {
 
       this.parentElement = baseEl;
       this.dataConfig = dataConfig;
-      this.dataType = trackConfig.dataType;
+      this.dataType = trackConfig.dataType || trackConfig.datatype;
       this.options = trackConfig.options;
       this.animate = animate;
       this.positioning = {
@@ -73,6 +73,11 @@ const Insets2dTrack = (HGC, ...args) => {
         offsetBottom: trackConfig.offsetBottom,
         offsetLeft: trackConfig.offsetLeft,
       };  // Needed for the gallery view
+
+      if (!this.dataType) {
+        this.dataType = 'cooler';
+        console.warn('Insets2dTrack: Unknown data type. Guessing `cooler`!');
+      }
 
       // Set the parent track to be the `div` of CenterTrack
       if (this.positioning.location === 'center') {
