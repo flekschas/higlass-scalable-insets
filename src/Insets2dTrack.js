@@ -188,6 +188,10 @@ const Insets2dTrack = (HGC, ...args) => {
         .domain([0, 1]).range([1, 10]).clamp(true);
       const cellValueLogTransform = scaleLog();
       this.toLog = value => cellValueLogTransform(cellValueLogNorm(value));
+
+      if (this.options.fading) {
+        this.fadingRange = this.options.fading[1] - this.options.fading[0];
+      }
     }
 
     findParentEl(cssClasses) {
@@ -595,6 +599,23 @@ const Insets2dTrack = (HGC, ...args) => {
       this.publish('position', newPosition);
     }
 
+    fadeInsets() {
+      if (!this.options.fading) return;
+
+      this.insets
+        .filter(inset => inset.label.oWH * 2 > this.options.fading[0])
+        .forEach((inset) => {
+          const maxSize = max(inset.label.oWH, inset.label.oHH) * 2;
+          const opacity = maxSize > this.options.fading[0]
+            ? max(0.33, (1 - ((
+              (inset.originWidthHalf * 2) - this.options.fading[0]
+            ) / this.fadingRange)))
+            : 1;
+
+          inset.setOpacity(opacity);
+        });
+    }
+
     zoomed(newXScale, newYScale, k) {
       if (k !== this.oldK) {
         removeClass(
@@ -607,6 +628,8 @@ const Insets2dTrack = (HGC, ...args) => {
       this.oldK = k;
 
       this.publish('zoom', { newXScale, newYScale, k });
+
+      this.fadeInsets();
     }
   }
 
