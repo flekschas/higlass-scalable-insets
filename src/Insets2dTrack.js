@@ -180,7 +180,12 @@ const Insets2dTrack = (HGC, ...args) => {
         ])
         .clamp(true);
 
-      const cellValueLogNorm = scaleLinear().domain([0, 1]).range([1, 10]);
+      // Clamp values to the range to avoid issues when log transforming.
+      // The only troublesome value is `-1`, which stands for filtered bins.
+      // Since we don't have a means to show these values right now we simple
+      // force any value below 0 to be 0.
+      const cellValueLogNorm = scaleLinear()
+        .domain([0, 1]).range([1, 10]).clamp(true);
       const cellValueLogTransform = scaleLog();
       this.toLog = value => cellValueLogTransform(cellValueLogNorm(value));
     }
