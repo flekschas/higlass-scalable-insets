@@ -651,9 +651,11 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
       // falling within the same border section.
       const binSizeX = centerWidth / Math.floor(centerWidth / insetMaxSize);
       const binSizeY = centerHeight / Math.floor(centerHeight / insetMaxSize);
-      const binsTop = Array(Math.floor(centerWidth / insetMaxSize)).fill(0);
+      const numXBins = Math.floor(centerWidth / insetMaxSize);
+      const binsTop = Array(numXBins).fill(0);
       const binsBottom = Array.from(binsTop);
-      const binsLeft = Array(Math.floor(centerHeight / insetMaxSize)).fill(0);
+      const numYBins = Math.floor(centerHeight / insetMaxSize);
+      const binsLeft = Array(numYBins).fill(0);
       const binsRight = Array.from(binsLeft);
 
       const offX = this.insetsTrack.positioning.offsetX;
@@ -710,8 +712,8 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
         const oX = (cluster.maxX + cluster.minX) / 2;
         const oY = (cluster.maxY + cluster.minY) / 2;
 
-        const xBinId = Math.floor(oX / binSizeX);
-        const yBinId = Math.floor(oY / binSizeY);
+        const xBinId = max(0, min(numXBins - 1, Math.floor(oX / binSizeX)));
+        const yBinId = max(0, min(numYBins - 1, Math.floor(oY / binSizeY)));
         const penaltyTop = binsTop[xBinId];
         const penaltyBottom = binsBottom[xBinId];
         const penaltyLeft = binsLeft[yBinId];
