@@ -688,18 +688,15 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
             c.wH = width / 2;
             c.hH = height / 2;
 
-            /* eslint-disable no-nested-ternary */
-            c.x = c.isVerticalOnly
-              ? c.isLeftCloser
+            if (c.isVerticalOnly) {
+              c.x = c.isLeftCloser
                 ? offX - c.wH
-                : offX + c.wH + centerWidth
-              : c.x;
-            c.y = c.isVerticalOnly
-              ? c.y
-              : c.isTopCloser
+                : offX + c.wH + centerWidth;
+            } else {
+              c.y = c.isTopCloser
                 ? offY - c.hH
                 : offY + c.hH + centerHeight;
-            /* eslint-enable no-nested-ternary */
+            }
 
             // Let them wobble a bit because the size changed
             c.t = 0.25;
