@@ -179,7 +179,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
      *   (geo json).
      */
     annotationDrawnHandler({
-      trackUuid, annotationUuid, viewPos, dataPos, importance, info,
+      trackUuid, annotationUuid, annotationId, viewPos, dataPos, importance, info,
     }) {
       const dataPosProj = [
         this.projectorX(dataPos[0]),
@@ -207,6 +207,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
           importance,
           info,
           this.options.clusterAmong || false,
+          annotationId,
         );
       }
 
@@ -633,7 +634,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
       const insetMaxSize = (
         this.insetsTrack.insetMaxSize * this.insetsTrack.insetScale
       );
-      const insetHalfSize = insetMaxSize / 2;
+      // const insetHalfSize = insetMaxSize / 2;
 
       // Dimensions and padding of the center track
       const centerWidth = (
@@ -731,19 +732,19 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
         if (isXShorter) {
           if (isLeftCloser) {
             x = offX - (width / 2);
-            binsLeft[yBinId] += insetHalfSize;
+            binsLeft[yBinId] += insetMaxSize;
           } else {
             x = offX + centerWidth + (width / 2);
-            binsRight[yBinId] += insetHalfSize;
+            binsRight[yBinId] += insetMaxSize;
           }
           y = offY + cluster.minY;
         } else {
           if (isTopCloser) {
             y = offY - (height / 2);
-            binsTop[xBinId] += insetHalfSize;
+            binsTop[xBinId] += insetMaxSize;
           } else {
             y = offY + centerHeight + (height / 2);
-            binsBottom[xBinId] += insetHalfSize;
+            binsBottom[xBinId] += insetMaxSize;
           }
           x = offX + cluster.minX;
         }

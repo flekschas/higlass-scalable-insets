@@ -79,22 +79,20 @@ const Insets2dTrack = (HGC, ...args) => {
         console.warn('Insets2dTrack: Unknown data type. Guessing `cooler`!');
       }
 
-      // Set the parent track to be the `div` of CenterTrack
       if (this.positioning.location === 'center') {
-        const updateBaseEl = className => (el) => {
-          if (hasClass(el, className)) {
-            this.parentElement = el;
-          }
-        };
-        forEach(updateBaseEl('track-renderer-events'))(
-          this.parentElement.childNodes,
-        );
-        forEach(updateBaseEl('center-track-container'))(
-          this.parentElement.childNodes,
-        );
-        forEach(updateBaseEl('center-track'))(
-          this.parentElement.childNodes,
-        );
+        this.findParentEl([
+          'track-renderer-events',
+          'center-track-container',
+          'center-track',
+        ]);
+      }
+
+      if (this.positioning.location === 'gallery') {
+        this.findParentEl([
+          'track-renderer-events',
+          'gallery-track-container',
+          'gallery-tracks',
+        ]);
       }
 
       this.mouseDownHandlerBound = this.mouseDownHandler.bind(this);
@@ -144,6 +142,8 @@ const Insets2dTrack = (HGC, ...args) => {
 
       this.pubSubs.push(
         pubSub.subscribe('app.mouseMove', this.mouseMoveHandlerBound),
+        pubSub.subscribe('mousedown', this.mouseDownHandlerBound),
+        pubSub.subscribe('mouseup', this.mouseUpHandlerBound),
       );
 
       // Create a custom pubSub interface
@@ -188,6 +188,17 @@ const Insets2dTrack = (HGC, ...args) => {
         .domain([0, 1]).range([1, 10]).clamp(true);
       const cellValueLogTransform = scaleLog();
       this.toLog = value => cellValueLogTransform(cellValueLogNorm(value));
+    }
+
+    findParentEl(cssClasses) {
+      const updateBaseEl = className => (el) => {
+        if (hasClass(el, className)) {
+          this.parentElement = el;
+        }
+      };
+      cssClasses.forEach((cssClass) => {
+        forEach(updateBaseEl(cssClass))(this.parentElement.childNodes);
+      });
     }
 
     getContextMenuGoto(inset) {
@@ -395,17 +406,7 @@ const Insets2dTrack = (HGC, ...args) => {
       this.baseElement = document.createElement('div');
       this.baseElement.className = style['insets-track'];
 
-      if (this.positioning.location !== 'center') {
-        this.baseElement.style.top = `${this.positioning.offsetTop}px`;
-        this.baseElement.style.right = `${this.positioning.offsetRight}px`;
-        this.baseElement.style.bottom = `${this.positioning.offsetBottom}px`;
-        this.baseElement.style.left = `${this.positioning.offsetLeft}px`;
-      }
-
       this.parentElement.appendChild(this.baseElement);
-
-      this.baseElement.addEventListener('mousedown', this.mouseDownHandlerBound);
-      this.baseElement.addEventListener('mouseup', this.mouseUpHandlerBound);
     }
 
     initInset(
