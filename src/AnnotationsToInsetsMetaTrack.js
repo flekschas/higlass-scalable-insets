@@ -673,8 +673,8 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
 
           c.oX = newOx;
           c.oY = newOy;
-          c.owh = (cluster.maxX - cluster.minX) / 2;
-          c.ohh = (cluster.maxY - cluster.minY) / 2;
+          c.oWH = (cluster.maxX - cluster.minX) / 2;
+          c.oHH = (cluster.maxY - cluster.minY) / 2;
 
           c.x -= c.isVerticalOnly ? 0 : dX;
           c.y -= c.isVerticalOnly ? dY : 0;
