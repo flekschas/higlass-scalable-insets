@@ -124,6 +124,8 @@ export default class Inset {
     this.dragStartGlobalX = -1;
     this.dragStartGlobalY = -1;
 
+    this.opacity = 1;
+
     this.indicator = {};
 
     this.borderStyle = [1, 0x000000, 0.33];
@@ -1644,6 +1646,11 @@ export default class Inset {
       }
       return false;
     });
+  }
+
+  setOpacity(opacity) {
+    this.opacity = +opacity;
+    this.border.style.opacity = this.opacity;
   }
 
   annoSelected(id) {
