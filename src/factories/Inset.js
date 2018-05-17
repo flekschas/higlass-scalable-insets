@@ -1304,6 +1304,7 @@ export default class Inset {
     )
       .then(response => response.json())
       .then((parsedResponse) => {
+        if (parsedResponse.error) this.fetchAttempts++;
         // Add the request ID to the response in order to identify the latest
         // response value and avoid rendering and positioning hiccups.
         parsedResponse.requestId = fetchRequest;
