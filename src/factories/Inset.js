@@ -81,13 +81,9 @@ export default class Inset {
     this.fetching = -1;
 
     this.gMain = new PIXI.Graphics();
-    this.gBorder = new PIXI.Graphics();
-    this.gLeaderLine = new PIXI.Graphics();
     this.gOrigin = new PIXI.Graphics();
 
     this.gMain.addChild(this.gOrigin);
-    this.gMain.addChild(this.gLeaderLine);
-    this.gMain.addChild(this.gBorder);
 
     this.prvData = [];
     this.prv2dData = [];
@@ -274,15 +270,12 @@ export default class Inset {
     y = this.y,
     width = this.width,
     height = this.height,
-    graphics = this.gBorder,
     radius = this.options.borderRadius,
     fill = this.borderFill,
   ) {
     const [vX, vY] = this.computeBorderPosition(x, y, width, height);
 
-    if (!this.border) {
-      this.renderBorder(x, y, width, height, radius, fill, graphics);
-    }
+    if (!this.border) this.renderBorder();
 
     const borderWidthExtra = this.compBorderExtraWidth();
 
@@ -424,8 +417,6 @@ export default class Inset {
   clear(options = this.options) {
     if (this.tweenStop) this.tweenStop(1);
     this.gOrigin.clear();
-    this.gBorder.clear();
-    this.gLeaderLine.clear();
     this.gMain.clear();
     this.initGraphics(options);
   }
@@ -435,7 +426,6 @@ export default class Inset {
    */
   clearBorder() {
     if (this.tweenStop) this.tweenStop(1);
-    this.gBorder.removeChildren();
     this.border.destroy();
     this.border = undefined;
   }
@@ -786,8 +776,6 @@ export default class Inset {
     this.isDestroyed = true;
 
     this.gOrigin.destroy();
-    this.gBorder.destroy();
-    this.gLeaderLine.destroy();
     this.gMain.destroy();
 
     this.data = null;
@@ -1335,7 +1323,6 @@ export default class Inset {
       this.y,
       this.width,
       this.height,
-      this.gBorder,
       this.options.borderRadius,
       this.isFocusBorderOnScale ? this.focusColor : undefined,
     );
@@ -1433,8 +1420,6 @@ export default class Inset {
    * @param  {Object}  options  Line style for the border and leader line.
    */
   initGraphics() {
-    // this.gBorder.lineStyle(...this.borderStyle);
-    this.gLeaderLine.lineStyle(...this.leaderLineStyle);
     this.gOrigin.lineStyle(...this.originStyle);
   }
 
