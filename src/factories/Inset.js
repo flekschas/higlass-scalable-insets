@@ -1274,7 +1274,7 @@ export default class Inset {
     let representative = 0;
     let maxPrvs = this.options.maxPreviews;
 
-    if (this.dataType.indexOf('image') >= 0) {
+    if (!this.isMatrix) {
       aggregation = '';
       encoding = 'b64';
       representative = 4;
