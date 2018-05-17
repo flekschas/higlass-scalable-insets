@@ -2,6 +2,7 @@ const path = require('path');
 
 const autoprefixer = require('autoprefixer');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
@@ -17,6 +18,7 @@ module.exports = {
   devServer: {
     contentBase: [
       path.join(__dirname, 'node_modules/higlass/build'),
+      path.join(__dirname, 'node_modules/higlass-image/dist'),
     ],
     watchContentBase: true,
   },
@@ -71,6 +73,7 @@ module.exports = {
               minimize: { safe: true },
               url: false,
               modules: true,
+              localIdentName: '[name]__[local]__[hash:base64:6]',
             },
           },
           {
@@ -123,6 +126,9 @@ module.exports = {
     }),
     new UnminifiedWebpackPlugin(),
     // new BundleAnalyzerPlugin(),
+    new CopyWebpackPlugin([
+      { from: './src/example-image.html', to: './example-image.html' },
+    ]),
   ],
   externals: {
     'pixi.js': {
