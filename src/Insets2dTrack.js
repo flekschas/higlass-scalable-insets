@@ -690,6 +690,7 @@ Insets2dTrack.config = {
     colorRange: [ // corresponding to the fall colormap
       'white', 'rgba(245,166,35,1.0)', 'rgba(208,2,27,1.0)', 'black',
     ],
+    loadHiResOnScaleUp: false,
   },
   availableOptions: [
     'minSize',
@@ -743,6 +744,7 @@ Insets2dTrack.config = {
     'isFocusBorderOnScale',
     'insetOriginPadding',
     'colorRange',
+    'loadHiResOnScaleUp',
   ],
 };
 
