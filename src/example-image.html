@@ -2,11 +2,45 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HiGlass</title>
+<meta name="author" content="Fritz Lekschas">
+<meta name="description" content="A new technique for interactively exploring and navigating large numbers of annotated patterns in multiscale visual spaces such as gigapixel images, matrices, or maps.">
+<meta name="keywords" content="HiGlass, Plugin Tracks, Insets, Gigapixel Images">
+<title>Scalable Insets for HiGlass: Gigapixel Image Example</title>
 <style type="text/css">
 html,
 body {
+  margin: 0;
+  padding: 0;
   background: black !important;
+}
+#menu {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 2rem;
+  display: flex;
+  font-size: 0.9rem;
+  line-height: 2rem;
+  border-bottom: 1px solid #222;
+}
+#menu a {
+  color: #888;
+  flex-grow: 1;
+  text-align: center;
+}
+#menu .active {
+  color: #fff;
+  font-weight: bold;
+  text-transform: uppercase;
+  background: #222;
+}
+#demo {
+  position: absolute;
+  left: 1rem;
+  top: 2rem;
+  bottom: 1rem;
+  right: 1rem;
 }
 </style>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
@@ -17,17 +51,19 @@ body {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.6.2/pixi.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-bootstrap/0.32.0/react-bootstrap.min.js"></script>
 </head>
-<body >
-  <div
-    id="development-demo"
-    style="position: absolute; left: 1rem; top: 1rem; bottom: 1rem; right: 1rem">
+<body>
+  <div id="menu">
+    <a href="/">Matrix</a>
+    <a href="/example-image.html" class="active">Image</a>
+    <a href="/example-map.html">Map</a>
   </div>
+  <div id="demo"></div>
 </body>
 <script src="higlass-image.js"></script>
 <script src="higlass-scalable-insets.min.js"></script>
 <script src="hglib.js"></script>
 <script>
-const testViewConfig = {
+const viewConfig = {
   editable: true,
   zoomFixed: false,
   trackSourceServers: ['http://higlass.io/api/v1'],
@@ -162,8 +198,8 @@ const testViewConfig = {
   },
 };
 window.hglib.createHgComponent(
-  document.getElementById('development-demo'),
-  testViewConfig,
+  document.getElementById('demo'),
+  viewConfig,
   { bounded: true, isDarkTheme: true },
 );
 </script>
