@@ -18,6 +18,7 @@ module.exports = {
   devServer: {
     contentBase: [
       path.join(__dirname, 'node_modules/higlass/build'),
+      path.join(__dirname, 'node_modules/higlass-geojson/dist'),
       path.join(__dirname, 'node_modules/higlass-image/dist'),
     ],
     watchContentBase: true,
@@ -128,6 +129,7 @@ module.exports = {
     // new BundleAnalyzerPlugin(),
     new CopyWebpackPlugin([
       { from: './src/example-image.html', to: './example-image.html' },
+      { from: './src/example-map.html', to: './example-map.html' },
     ]),
   ],
   externals: {
