@@ -8,11 +8,13 @@
  * @param  {number}  importance  Some importance score.
  * @param  {object}  info  Object holding information about the annotation
  * @param  {string}  typeProp  Property if `info` holding the annotation type.
+ * @param  {int}  intId  Internal dataset ID, usually an integer.
  */
 function Annotation(
-  id, viewPos, dataPos, dataPosProj, importance, info = {}, typeProp,
+  id, viewPos, dataPos, dataPosProj, importance, info = {}, typeProp, intId,
 ) {
   this.id = id;
+  this.intId = intId;
 
   this.minX = viewPos[0];
   this.maxX = viewPos[1];

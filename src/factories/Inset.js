@@ -106,10 +106,14 @@ export default class Inset {
     this.resolution = this.options.resolution || this.maxSize;
     this.resolutionCustom = this.options.resolutionCustom || {};
     this.scaleBase = this.options.scale || BASE_SCALE;
-    this.additionalZoom = this.options.additionalZoom || 0;
     this.onClickScale = this.options.onClickScale || BASE_SCALE_UP;
     this.pileOrientaton = this.options.pileOrientaton || PILE_ORIENTATION;
     this.previewSpacing = this.options.previewSpacing || PREVIEW_SPACING;
+    this.leaderLineStubLength = this.options.leaderLineStubLength | 0;
+
+    if (typeof this.leaderLineStubLength === 'boolean') {
+      this.leaderLineStubLength = 12;
+    }
 
     this.scaleExtra = 1;
     this.offsetX = 0;
@@ -131,7 +135,6 @@ export default class Inset {
     this.borderStyle = [1, 0x000000, 0.33];
     this.borderPadding = options.borderWidth * 2 || 4;
     this.borderFill = options.borderColor;
-    this.borderFillAlpha = options.borderOpacity || 1;
     this.clusterSizeColor = this.options.clusterSizeColor || 'black';
 
     this.focusColor = options.focusColor || 'orange';
@@ -165,6 +168,12 @@ export default class Inset {
     }
 
     if (this.options.leaderLineFading) {
+      if (typeof this.leaderLineFading === 'boolean') {
+        this.leaderLineFading = {
+          0: 1, 0.35: 0.33, 0.65: 0.33, 1: 1,
+        };
+      }
+
       this.leaderLinePercentages = Object
         .keys(this.options.leaderLineFading)
         .map(percent => +percent)
@@ -916,7 +925,7 @@ export default class Inset {
     let dist = lDist(pointFrom, pointTo);
 
     if (
-      this.options.leaderLineStubLength * 1.5 < dist ||
+      this.leaderLineStubLength * 1.5 < dist ||
       this.options.leaderLineFading
     ) {
       // Calculate the truncated start and end points
@@ -959,7 +968,7 @@ export default class Inset {
       addClass(line, style['inset-leader-line-focus']);
     }
 
-    if (this.options.leaderLineStubLength) {
+    if (this.leaderLineStubLength) {
       let stubA = this.leaderLineStubA;
       let stubB = this.leaderLineStubB;
 
@@ -979,8 +988,8 @@ export default class Inset {
 
       const relD = this.isDragging || this.isScaledUp ? 0 : this.relD;
 
-      const width = Math.max(
-        this.options.leaderLineStubLength,
+      const width = max(
+        this.leaderLineStubLength,
         dist * (1 - relD),
       );
       const lineWidth = (
@@ -1264,20 +1273,31 @@ export default class Inset {
    * @return  {Object}  Promise resolving to the JSON response
    */
   fetchData(isHiRes = false) {
-    let loci = this.remotePaddedPos.map((remotePaddedPos, i) => [
-      ...remotePaddedPos,
-      this.dataConfig.tilesetUid,
-      this.computeZoom(i, isHiRes),
-      this.finalRes[i],
-    ]);
+    let loci = this.remotePaddedPos.map((remotePaddedPos, i) => {
+      const locus = [
+        ...remotePaddedPos,
+        this.dataConfig.tilesetUid,
+        this.computeZoom(i, isHiRes),
+        this.finalRes[i],
+      ];
+
+      // Add the local database ID of the inset to be loaded
+      if (this.label.src.members.size >= i + 1) {
+        locus.push(this.label.src.members.values[i].intId);
+      }
+
+      return locus;
+    });
 
     let aggregation = '1';
+    let dtype = 'cooler';
     let encoding = 'matrix';
     let representative = 0;
     let maxPrvs = this.options.maxPreviews;
 
     if (!this.isMatrix) {
       aggregation = '';
+      dtype = 'image';
       encoding = 'b64';
       representative = 4;
       maxPrvs = 0;
@@ -1293,8 +1313,18 @@ export default class Inset {
 
     const fetchRequest = ++this.fetching;
 
+    const url = [
+      this.dataConfig.server,
+      '/fragments_by_loci/?ag=', aggregation,
+      '&en=', encoding,
+      '&rp=', representative,
+      '&mp=', maxPrvs,
+      '&dt=', dtype,
+      ignoreDiag,
+    ].join('');
+
     return fetch(
-      `${this.dataConfig.server}/fragments_by_loci/?ag=${aggregation}&en=${encoding}&rp=${representative}&mp=${maxPrvs}${ignoreDiag}`,
+      url,
       {
         method: 'POST',
         headers: {
