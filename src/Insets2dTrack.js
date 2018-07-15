@@ -649,6 +649,7 @@ Insets2dTrack.config = {
     borderColor: 'white',
     borderRadius: 2,
     borderWidth: 2,
+    loaderColor: 'rgba(0, 0, 0, 0.2)',
     colorRange: [ // corresponding to the fall colormap
       'white', 'rgba(245,166,35,1.0)', 'rgba(208,2,27,1.0)', 'black',
     ],
@@ -694,6 +695,7 @@ Insets2dTrack.config = {
     'borderColor',
     'borderRadius',
     'borderWidth',
+    'loaderColor',
     'colorRange',
     'dropBlur',
     'dropDistance',

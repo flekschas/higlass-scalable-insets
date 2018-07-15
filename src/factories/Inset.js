@@ -136,7 +136,7 @@ export default class Inset {
     this.borderPadding = options.borderWidth * 2 || 4;
     this.borderFill = options.borderColor;
     this.clusterSizeColor = this.options.clusterSizeColor || 'black';
-
+    this.loaderColor = options.loaderColor || 'rgba(0, 0, 0, 0.2)';
     this.focusColor = options.focusColor || 'orange';
     this.selectColor = options.selectColor || 'fuchsia';
 
@@ -1148,6 +1148,7 @@ export default class Inset {
         this.prvData = [];
         this.prv2dData = [];
 
+        this.renderLoadIndicator();
         this.inFlight = this.fetchData(isHiRes)
           .then((data) => {
             if (
@@ -1905,6 +1906,26 @@ export default class Inset {
   }
 
   /**
+   * Render the loading indicator
+   */
+  renderLoadIndicator() {
+    const { width, height } = this.border.getBoundingClientRect();
+    const dim = min(width / 2, height / 2);
+
+    this.insetLoadIndicator = document.createElement('div');
+    this.insetLoadIndicator.className = style['inset-load-indicator'];
+
+    const pulser = document.createElement('div');
+    pulser.className = style['inset-pulser'];
+    pulser.style.width = `${dim}px`;
+    pulser.style.height = `${dim}px`;
+    pulser.style.background = this.loaderColor;
+    this.insetLoadIndicator.appendChild(pulser);
+
+    this.border.appendChild(this.insetLoadIndicator);
+  }
+
+  /**
    * Render the main image and assign event listeners.
    *
    * @param  {Array}  data  Data to be rendered
@@ -1912,8 +1933,8 @@ export default class Inset {
   renderImage(data, idx, force, requestId) {
     if (
       !data ||
-      (this.imgs.length === data.length && !force) ||
       !data.length ||
+      (this.imgs.length === data.length && !force) ||
       this.isDestroyed
     ) return Promise.resolve();
 
@@ -1927,6 +1948,11 @@ export default class Inset {
     if (this.imgsWrapper) {
       toBeRemoved = this.imgsWrapper;
       addClass(toBeRemoved, style['to-be-removed']);
+    }
+
+    if (this.insetLoadIndicator) {
+      this.border.removeChild(this.insetLoadIndicator);
+      this.insetLoadIndicator = undefined;
     }
 
     this.imgsWrapper = document.createElement('div');
