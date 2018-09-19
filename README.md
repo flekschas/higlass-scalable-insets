@@ -2,10 +2,10 @@
 
 > Explore your beloved 2D annotations with [Scalable Insets](http://scalable-insets.lekschas.de) in HiGlass
 
-[![HiGlass](https://img.shields.io/badge/higlass-👍-red.svg?colorB=ff2b00)](http://higlass.io)
-[![Scalable Insets](https://img.shields.io/badge/scalable%20insets-😍-red.svg?colorB=ff2b00)](http://scalable-insets.lekschas.de)
-[![Video](https://img.shields.io/badge/video-🎉-red.svg?colorB=ff2b00)](https://youtu.be/7Bn4mNLl3WQ)
-[![Build Status](https://img.shields.io/travis/flekschas/higlass-scalable-insets/master.svg?colorB=ff2b00)](https://travis-ci.org/flekschas/higlass-scalable-insets)
+[![HiGlass](https://img.shields.io/badge/higlass-👍-red.svg?colorB=000000)](http://higlass.io)
+[![Scalable Insets](https://img.shields.io/badge/scalable%20insets-😍-red.svg?colorB=000000)](http://scalable-insets.lekschas.de)
+[![Video](https://img.shields.io/badge/video-🎉-red.svg?colorB=000000)](https://youtu.be/7Bn4mNLl3WQ)
+[![Build Status](https://travis-ci.org/flekschas/higlass-scalable-insets.svg?branch=master)](https://travis-ci.org/flekschas/higlass-scalable-insets)
 
 [Scalable Insets](http://scalable-insets.lekschas.de) is a new technique for interactively exploring and navigating large numbers of annotated patterns in multiscale visual spaces such as gigapixel images, matrices, or maps. Our technique visualizes annotated patterns too small to be identifiable at certain zoom levels using insets, i.e., magnified thumbnail views of the patterns. Find out more at [http://scalable-insets.lekschas.de](http://scalable-insets.lekschas.de) and watch our <5min introductory video at [https://youtu.be/7Bn4mNLl3WQ](https://youtu.be/7Bn4mNLl3WQ).
 
@@ -230,4 +230,4 @@ npm link higlass
 npm start
 ```
 
-Now whenever you make changes to your local HiGlass instance it will be re-build and also trigger a re-build of the Scalable Insets track.
+Now, whenever you make changes to your local HiGlass instance it will be re-build and also trigger a re-build of the Scalable Insets track.
