@@ -62,6 +62,7 @@ const Insets2dTrack = (HGC, ...args) => {
       this.dataType = trackConfig.dataType || trackConfig.datatype;
       this.options = trackConfig.options;
       this.animate = animate;
+      // Needed for the gallery view
       this.positioning = {
         location: trackConfig.position,
         width: trackConfig.width,
@@ -72,7 +73,18 @@ const Insets2dTrack = (HGC, ...args) => {
         offsetRight: trackConfig.offsetRight,
         offsetBottom: trackConfig.offsetBottom,
         offsetLeft: trackConfig.offsetLeft,
-      };  // Needed for the gallery view
+      };
+
+      // Merge the tilesetUids for the primary and secondary data sources.
+      // The primary data source is either the original tileset containing the
+      // image, map, or matrix tiles or the annotation file with preloaded
+      // images. Given the latter, the secondary tilesetUid should be the uid
+      // of the original data source as a backup when the preloaded images are
+      // not available.
+      this.dataConfig.tilesetUids = [
+        this.dataConfig.tilesetUid,
+        trackConfig.tilesetUidSecondary || '',
+      ].join(',');
 
       if (!this.dataType) {
         this.dataType = 'cooler';

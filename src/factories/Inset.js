@@ -1277,7 +1277,7 @@ export default class Inset {
     let loci = this.remotePaddedPos.map((remotePaddedPos, i) => {
       const locus = [
         ...remotePaddedPos,
-        this.dataConfig.tilesetUid,
+        this.dataConfig.tilesetUids,
         this.computeZoom(i, isHiRes),
         this.finalRes[i],
       ];
