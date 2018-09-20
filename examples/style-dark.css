@@ -1,0 +1,58 @@
+html, body {
+  color: #999;
+  background: black;
+}
+
+#topbar {
+  background: rgba(32, 32, 32, 0.9);
+}
+
+#topbar:focus,
+#topbar:focus-within {
+  background: rgba(32, 32, 32, 1);
+}
+
+#topbar *::-moz-selection { color: #fff; background: rgba(255, 43, 0, 0.66); }
+#topbar *::selection { color: #fff; background: rgba(255, 43, 0, 0.66); }
+
+#title {
+  color: white;
+}
+
+#title-wrapper a {
+  color: #999;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+#title-wrapper a:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+#title-wrapper a.active {
+  color: #fff;
+  background: rgba(255, 43, 0, 1);
+}
+
+#description a {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+#description a:hover {
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 1);
+}
+#description .more {
+  color: #666;
+}
+
+#links a {
+  border-bottom: 0;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+#links a:hover {
+  color: #fff;
+  border-bottom: 0;
+  background: rgba(255, 255, 255, 0.3);
+}
