@@ -364,7 +364,7 @@ function splitCluster(cluster) {
     }
   };
 
-  // Split at the furthest neighbor
+  // Split at the farthest neighbor
   const fnn = cluster.fnns.poll();
   const maxD = this.gridSize * 1.5;
   const newCluster = new AreaCluster(this.isAverageCenter, this.gridSize);
