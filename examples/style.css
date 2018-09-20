@@ -1,0 +1,164 @@
+html, body {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  font-family: sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+abbr {
+  text-decoration: none;
+}
+
+.flex-c {
+  display: flex;
+}
+
+.flex-jc-sb {
+  justify-content: space-between;
+}
+
+.flex-a-c {
+  align-items: center;
+}
+
+.flex-v {
+  flex-direction: column;
+}
+
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#topbar {
+  position: absolute;
+  z-index: 1;
+  top: 0.5rem;
+  left: 0.5rem;
+  width: 20rem;
+  padding: 0.5rem;
+  font-size: 0.85rem;
+  border-radius: 0.2rem;
+  transition: background 0.15s cubic-bezier(0.25, 0.1, 0.25, 1);
+  text-rendering: optimizeLegibility;
+}
+
+#topbar:focus,
+#topbar:focus-within {
+  pointer-events: none;
+  outline: none;
+}
+
+#title {
+  padding: 0;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: bold;
+}
+
+#title-wrapper {
+  margin-bottom: 0.5rem;
+}
+
+#title-wrapper .menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#title-wrapper a {
+  display: block;
+  padding: 0 0.33rem;
+  font-size: 0.8rem;
+  line-height: 1.5rem;
+  height: 1.5rem;
+  text-transform: uppercase;
+  pointer-events: all;
+  font-weight: normal;
+}
+
+#title-wrapper a:hover {
+  border-bottom: 0;
+  text-decoration: none;
+}
+
+#title-wrapper a:first-child {
+  border-radius: 0.2rem 0 0 0.2rem;
+}
+
+#title-wrapper a:last-child {
+  border-radius: 0 0.2rem 0.2rem 0;
+}
+
+#title-wrapper a.active {
+  font-weight: bold;
+}
+
+#description {
+  pointer-events: all;
+}
+
+#description a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#description p {
+  margin-bottom: 0;
+}
+
+#topbar:focus #description p:first-child,
+#topbar:focus-within #description p:first-child {
+  margin-bottom: 1rem;
+}
+
+#topbar:focus #description .more,
+#topbar:focus-within #description .more {
+  display: none;
+}
+
+#description-more {
+  display: none;
+}
+
+#topbar:focus #description-more,
+#topbar:focus-within #description-more {
+  display: block;
+}
+
+#links a {
+  flex-grow: 1;
+  margin: 0 0.25rem;
+  font-size: 0.8rem;
+  line-height: 1.5rem;
+  height: 1.5rem;
+  text-align: center;
+  border-bottom: 0;
+  border-radius: 0.2rem;
+}
+
+#links a:first-child {
+  margin-left: 0;
+}
+
+#links a:last-child {
+  margin-right: 0;
+}
+
+#links a:hover {
+  border-bottom: 0;
+}
+
+#demo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden
+}

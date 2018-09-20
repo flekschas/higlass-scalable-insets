@@ -1,44 +1,84 @@
 <!DOCTYPE html>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HiGlass</title>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
-<link rel="stylesheet" href="hglib.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="author" content="Fritz Lekschas">
+  <meta name="description" content="A new technique for interactively exploring and navigating large numbers of annotations in images.">
+  <meta name="keywords" content="HiGlass, Plugin Tracks, Insets, Matrices, Hi-C, Genome Interaction Maps, Loops, Domains, TADs, 3D Genome, Exploration, Navigation, Guidance, Multiscale, 2D, Visualization">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.2/react.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/15.6.2/react-dom.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.6.2/pixi.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-bootstrap/0.32.0/react-bootstrap.min.js"></script>
+  <!-- Schema.org markup for Google+ -->
+  <meta itemprop="name" content="HiGlass Scalable Insets for Hi-C Matrices">
+  <meta itemprop="description" content="A new technique for interactively exploring and navigating large numbers of annotated patterns like loops or domains in Hi-C matrices for exploring the 3D genome.">
+  <meta itemprop="image" content="http://scalable-insets.lekschas.de/images/teaser-hic.jpg">
+
+  <!-- Twitter Card data -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@flekschas">
+  <meta name="twitter:title" content="HiGlass Scalable Insets for Hi-C Matrices">
+  <meta name="twitter:description" content="A new technique for interactively exploring and navigating large numbers of annotated patterns like loops or domains in Hi-C matrices for exploring the 3D genome.">
+  <meta name="twitter:creator" content="@flekschas">
+  <!-- Twitter summary card with large image must be at least 280x150px -->
+  <meta name="twitter:image:src" content="http://scalable-insets.lekschas.de/images/teaser-hic.jpg">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="HiGlass Scalable Insets for Hi-C Matrices" />
+  <meta property="og:description" content="A new technique for interactively exploring and navigating large numbers of annotated patterns like loops or domains in Hi-C matrices for exploring the 3D genome." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://github.com/flekschas/higlass-scalable-insets" />
+  <meta property="og:image" content="http://scalable-insets.lekschas.de/images/teaser-hic.jpg" />
+
+  <title>HiGlass Scalable Insets for Hi-C Matrices</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
+  <link rel="stylesheet" href="hglib.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style-dark.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/16.4.2/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.4.2/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.8.2/pixi.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-bootstrap/0.32.1/react-bootstrap.min.js"></script>
 </head>
-<body >
-  <div
-    id="development-demo"
-    style="position: absolute; left: 1rem; top: 1rem; bottom: 1rem; right: 1rem">
-  </div>
+<body>
+  <header id="topbar" tabindex="0">
+    <div id="title-wrapper" class="flex-c flex-jc-sb">
+      <h1 id="title">Scalable Insets</h1>
+      <ul class="flex-c menu">
+        <a href="/" class="no-select">Image</a>
+        <a href="/map.html" class="no-select">Map</a>
+        <a href="/hic.html" class="no-select active">Hi-C</a>
+      </ul>
+    </div>
+    <section id="description">
+      <p>
+        A new technique for interactively exploring and navigating large numbers of annotations in <a href="/">gigapixel images</a>, <a href="/map.html">geographic maps</a>, and genome interaction matrices. <em class="more">More</em>
+      </p>
+      <div id="description-more">
+        <p>
+          This example visualizes loops and TADs in <a href="https://www.ncbi.nlm.nih.gov/pubmed/25497547" target="_blank">Rao et al. 2014</a>'s Hi-C matrix using <a href="https://higlass.io" target="_blank">HiGlass</a>.
+        </p>
+        <div id="links" class="flex-c flex-jc-sb">
+          <a href="https://www.youtube.com/watch?v=7Bn4mNLl3WQ" target="_blank">Video</a>
+          <a href="https://github.com/flekschas/higlass-scalable-insets" target="_blank">Source code</a>
+          <a href="http://scalable-insets.lekschas.de/" target="_blank">More info</a>
+        </div>
+      </div>
+    </section>
+  </header>
+  <div id="demo"></div>
 </body>
 <script src="hglib.js"></script>
-
 <script>
-const testViewConfig = {
-  editable: true,
+const viewConfig = {
+  editable: false,
   zoomFixed: false,
   trackSourceServers: [
     'http://higlass.io/api/v1',
-    'http://localhost:8989/api/v1',
   ],
-  exportViewUrl: 'http://localhost:8000/api/v1/viewconfs/',
+  exportViewUrl: 'http://higlass.io/api/v1/viewconfs/',
   views: [
     {
       uid: 'aa',
-      // initialXDomain: [
-      //   2288626814.9215517,
-      //   2292403756.8728547
-      // ],
-      // initialYDomain: [
-      //   2289720324.6361523,
-      //   2291935152.7318683
-      // ],
       initialXDomain: [
         2369671819.231136,
         2380392537.7446365,
@@ -51,68 +91,8 @@ const testViewConfig = {
       genomePositionSearchBoxVisible: true,
       chromInfoPath: '//s3.amazonaws.com/pkerp/data/hg19/chromSizes.tsv',
       tracks: {
-        top: [
-          {
-            name: 'Gene Annotations (hg19)',
-            server: 'http://higlass.io/api/v1',
-            tilesetUid: 'OHJakQICQD6gTD7skx4EWA',
-            uid: 'BEEMEjU7QCa2krDO9C0yOQ',
-            type: 'horizontal-gene-annotations',
-            options: {
-              labelPosition: 'outerTop',
-              name: 'Gene Annotations (hg19)',
-              labelColor: 'black',
-              plusStrandColor: 'black',
-              minusStrandColor: '#832b09',
-              trackBorderWidth: 0,
-              trackBorderColor: 'black',
-            },
-            width: 2310,
-            height: 60,
-            position: 'top',
-          },
-          {
-            chromInfoPath: '//s3.amazonaws.com/pkerp/data/hg19/chromSizes.tsv',
-            type: 'horizontal-chromosome-labels',
-            position: 'top',
-            name: 'Chromosome Labels (hg19)',
-            height: 30,
-            uid: 'I1QUF22JQJuJ38j9PS4iqw',
-            options: {},
-            width: 2310,
-          },
-        ],
-        left: [
-          {
-            type: 'vertical-gene-annotations',
-            width: 60,
-            tilesetUid: 'OHJakQICQD6gTD7skx4EWA',
-            server: 'http://higlass.io/api/v1',
-            position: 'left',
-            name: 'Gene Annotations (hg19)',
-            options: {
-              labelPosition: 'bottomRight',
-              name: 'Gene Annotations (hg19)',
-              labelColor: 'black',
-              plusStrandColor: 'black',
-              minusStrandColor: '#832b09',
-              trackBorderWidth: 0,
-              trackBorderColor: 'black',
-            },
-            uid: 'OgnAEKSHRaG-gR1RqPOuBQ',
-            height: 592,
-          },
-          {
-            chromInfoPath: '//s3.amazonaws.com/pkerp/data/hg19/chromSizes.tsv',
-            type: 'vertical-chromosome-labels',
-            position: 'left',
-            name: 'Chromosome Labels (hg19)',
-            width: 30,
-            uid: 'a-mFiHnBQ8uuI6UG3USWVA',
-            options: {},
-            height: 592,
-          },
-        ],
+        top: [],
+        left: [],
         center: [
           {
             uid: 'c1',
@@ -120,8 +100,8 @@ const testViewConfig = {
             height: 592,
             contents: [
               {
-                server: 'http://localhost:8001/api/v1',
-                tilesetUid: 'rao-gm12878-1kbmr',
+                server: '//higlass.io/api/v1',
+                tilesetUid: 'CQMd6V_cRw6iCI_-Unl3PQ',
                 type: 'heatmap',
                 position: 'center',
                 options: {
@@ -133,23 +113,11 @@ const testViewConfig = {
                     '#ae5507',
                     '#5a2009',
                     '#000000',
-                    // '#ffffff',
-                    // '#ffeacd',
-                    // '#ffb17c',
-                    // '#ff4500',
-                    // '#ac2506',
-                    // '#591606',
-                    // '#000000',
-                    // 'white',
-                    // '#dee5e5',
-                    // '#9eabb0',
-                    // '#626273',
-                    // '#1b1b22',
                   ],
-                  colorbarPosition: 'topRight',
+                  colorbarPosition: 'hidden',
                   colorbarLabelsPosition: 'outside',
                   maxZoom: null,
-                  labelPosition: 'bottomLeft',
+                  labelPosition: 'hidden',
                   name: 'Rao et al. (2014) GM12878 MboI (allreps) 1kb',
                   trackBorderWidth: 0,
                   trackBorderColor: 'black',
@@ -167,7 +135,7 @@ const testViewConfig = {
                 ],
               },
               {
-                server: 'http://higlass.io/api/v1',
+                server: '//higlass.io/api/v1',
                 tilesetUid: 'Pj-GSgp0SlqpKhuLJkhzFQ',
                 uid: 'anno-tads-1',
                 type: '2d-rectangle-domains',
@@ -187,9 +155,31 @@ const testViewConfig = {
                 position: 'center',
               },
               {
-                server: 'http://higlass.io/api/v1',
-                tilesetUid: 'UH5yId-URvCwCaxOrYGa8w',
+                server: '//higlass.io/api/v1',
+                tilesetUid: 'cNse-dLjS8OvE-1xT-ZUgA',
                 uid: 'anno-tads-2',
+                type: '2d-rectangle-domains',
+                options: {
+                  patternType: 'tad',
+                  labelColor: 'black',
+                  labelPosition: 'hidden',
+                  trackBorderWidth: 0,
+                  trackBorderColor: 'black',
+                  rectangleDomainFillColor: 'grey',
+                  rectangleDomainFillOpacity: 0,
+                  rectangleDomainStrokeColor: 'black',
+                  rectangleDomainStrokeWidth: 1,
+                  rectangleDomainStrokeOpacity: 1,
+                  rectangleDomainOpacity: 0,
+                  rectanlgeMinSize: 1,
+                  name: 'Forcato et al (2017) Rao_RepA_GM12878_Arrowhead.txt.multires.db',
+                },
+                position: 'center',
+              },
+              {
+                server: '//higlass.io/api/v1',
+                tilesetUid: 'UH5yId-URvCwCaxOrYGa8w',
+                uid: 'anno-tads-2a',
                 type: '2d-rectangle-domains',
                 options: {
                   patternType: 'tad',
@@ -207,7 +197,7 @@ const testViewConfig = {
                 position: 'center',
               },
               {
-                server: 'http://higlass.io/api/v1',
+                server: '//higlass.io/api/v1',
                 tilesetUid: 'cs3PLbfDTKO0fso6UewTPQ',
                 uid: 'anno-tads-3',
                 type: '2d-rectangle-domains',
@@ -227,7 +217,7 @@ const testViewConfig = {
                 position: 'center',
               },
               {
-                server: 'http://higlass.io/api/v1',
+                server: '//higlass.io/api/v1',
                 tilesetUid: 'OjpPD5gFQuSlQuxMTmLEVg',
                 uid: 'anno-tads-4',
                 type: '2d-rectangle-domains',
@@ -247,7 +237,7 @@ const testViewConfig = {
                 position: 'center',
               },
               {
-                server: 'http://higlass.io/api/v1',
+                server: '//higlass.io/api/v1',
                 tilesetUid: 'MwkxoQuDSiKCNbgjp_oajQ',
                 uid: 'anno-tads-5',
                 type: '2d-rectangle-domains',
@@ -267,7 +257,7 @@ const testViewConfig = {
                 position: 'center',
               },
               {
-                server: 'http://higlass.io/api/v1',
+                server: '//higlass.io/api/v1',
                 tilesetUid: 'LJKrbbQ5SeKDIPaLFP0diA',
                 uid: 'anno-tads-6',
                 type: '2d-rectangle-domains',
@@ -287,7 +277,7 @@ const testViewConfig = {
                 position: 'center',
               },
               {
-                server: 'http://higlass.io/api/v1',
+                server: '//higlass.io/api/v1',
                 tilesetUid: 'P6aAKSc5SrKZmLwv7zM5DA',
                 uid: 'anno-tads-7',
                 type: '2d-rectangle-domains',
@@ -307,7 +297,7 @@ const testViewConfig = {
                 position: 'center',
               },
               {
-                server: 'http://higlass.io/api/v1',
+                server: '//higlass.io/api/v1',
                 tilesetUid: 'Pj-GSgp0SlqpKhuLJkhzFQ',
                 uid: 'anno-tads-8',
                 type: '2d-rectangle-domains',
@@ -327,39 +317,39 @@ const testViewConfig = {
                 position: 'center',
               },
               {
-                server: 'http://localhost:8001/api/v1',
-                tilesetUid: 'loops',
+                server: '//higlass.io/api/v1',
+                tilesetUid: 'HunfK2D3R9iBdIq-YNYjiw',
                 uid: 'anno-loops-1',
                 type: '2d-rectangle-domains',
                 options: {
                   patternType: 'loop',
-                  labelColor: 'black',
+                  labelColor: '',
                   labelPosition: 'hidden',
                   trackBorderWidth: 0,
-                  trackBorderColor: 'black',
+                  trackBorderColor: '',
                   rectangleDomainFillColor: 'grey',
                   rectangleDomainFillOpacity: 0,
-                  rectangleDomainStrokeColor: 'black',
+                  rectangleDomainStrokeColor: '',
+                  rectangleDomainStrokeWidth: 1,
                   rectangleDomainOpacity: 1,
-                  inset: true,
-                  insetMinSize: 10,
-                  insetRelatedTrackUid: 'heatmap1',
-                  relatedTracks: ['heatmap1'],
                   rectanlgeMinSize: 0.01,
-                  name: 'Rao et al (2014) GSE63525_GM12878_primary+replicate_HiCCUPS_looplist.multires',
+                  name: 'Rao et al (2014) GM12878 (primary+replicate) HiCCUPS Loops',
                 },
                 position: 'center',
               },
               {
-                server: 'http://localhost:8001/api/v1',
-                tilesetUid: 'rao-gm12878-1kbmr',
+                server: '//higlass.io/api/v1',
+                tilesetUid: 'CQMd6V_cRw6iCI_-Unl3PQ',
+                // server: '//localhost:8001/api/v1',
+                // tilesetUid: 'rao-gm12878-1kbmr',
                 uid: 'insets-loops',
                 type: 'insets',
                 chromInfoPath: '//s3.amazonaws.com/pkerp/data/hg19/chromSizes.tsv',
                 dataType: 'cooler',
                 options: {
                   aggregation: 'pile',
-                  isLogTransform: false,
+                  isLogTransform: ['tad'],
+                  isIgnoreDiag: 2,
                   minClusterSize: 2,
                   maxPreviews: 8,
                   previewSpacing: 1,
@@ -409,12 +399,6 @@ const testViewConfig = {
                     '#ae5507',
                     '#5a2009',
                     '#000000',
-                    // 'white',
-                    // '#f2f1dc',
-                    // '#96a8b0',
-                    // '#555673',
-                    // '#191922',
-                    // 'black',
                   ],
                 },
               },
@@ -423,58 +407,14 @@ const testViewConfig = {
             options: {},
           },
         ],
-        right: [
-          {
-            name: 'wgEncodeSydhTfbsGm12878Rad21IggrabSig',
-            server: 'http://higlass.io/api/v1',
-            tilesetUid: 'F2vbUeqhS86XkxuO1j2rPA',
-            type: 'vertical-line',
-            options: {
-              labelColor: 'black',
-              labelPosition: 'outerLeft',
-              axisPositionHorizontal: 'right',
-              lineStrokeColor: 'black',
-              name: 'wgEncodeSydhTfbsGm12878Rad21IggrabSig.hitile',
-              valueScaling: 'log',
-              axisPositionVertical: 'top',
-              lineStrokeWidth: 1,
-              trackBorderWidth: 0,
-              trackBorderColor: 'black',
-              labelTextOpacity: 0.4,
-            },
-            width: 50,
-            uid: 'CRKsGdngTFm4JxH-BGuSfw',
-            height: 592,
-          },
-        ],
-        bottom: [
-          {
-            name: 'wgEncodeSydhTfbsGm12878Rad21IggrabSig',
-            server: 'http://higlass.io/api/v1',
-            tilesetUid: 'F2vbUeqhS86XkxuO1j2rPA',
-            type: 'horizontal-line',
-            options: {
-              labelPosition: 'outerLeft',
-              axisPositionHorizontal: 'right',
-              lineStrokeColor: 'black',
-              name: 'wgEncodeSydhTfbsGm12878Rad21IggrabSig.hitile',
-              valueScaling: 'log',
-              labelColor: 'black',
-              lineStrokeWidth: 1,
-              trackBorderWidth: 0,
-              trackBorderColor: 'black',
-              labelTextOpacity: 0.4,
-            },
-            width: 2310,
-            height: 50,
-            position: 'bottom',
-            uid: 'XqEiqg-GTkWL2K50hs_Skg',
-          },
-        ],
+        right: [],
+        bottom: [],
         gallery: [
           {
-            server: 'http://localhost:8001/api/v1',
-            tilesetUid: 'rao-gm12878-1kbmr',
+            server: '//higlass.io/api/v1',
+            tilesetUid: 'CQMd6V_cRw6iCI_-Unl3PQ',
+            // server: '//localhost:8001/api/v1',
+            // tilesetUid: 'rao-gm12878-1kbmr',
             uid: 'insets',
             type: 'insets',
             chromInfoPath: '//s3.amazonaws.com/pkerp/data/hg19/chromSizes.tsv',
@@ -485,7 +425,6 @@ const testViewConfig = {
               aggregation: 'pile',
               isLogTransform: ['tad'],
               isIgnoreDiag: 2,
-              minClusterSize: 2,
               maxPreviews: 8,
               previewSpacing: 1,
               minSize: 16,
@@ -536,7 +475,6 @@ const testViewConfig = {
               dropDistance: 1,
               dropBlur: 3,
               dropOpacity: 0.8,
-              opacity: 1,
               showClusterSize: true,
               isDraggingEnabled: true,
               scaleSizeBy: 'clusterSize',
@@ -551,12 +489,6 @@ const testViewConfig = {
                 '#ae5507',
                 '#5a2009',
                 '#000000',
-                // 'white',
-                // '#f2f1dc',
-                // '#96a8b0',
-                // '#555673',
-                // '#191922',
-                // 'black',
               ],
             },
           },
@@ -660,9 +592,7 @@ const testViewConfig = {
 };
 
 window.hgApi = window.hglib.viewer(
-  document.getElementById('development-demo'),
-  testViewConfig,
-  { bounded: true },
+  document.getElementById('demo'), viewConfig, { bounded: true },
 );
 </script>
 </html>

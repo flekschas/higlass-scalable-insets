@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="author" content="Fritz Lekschas">
+  <meta name="description" content="A new technique for interactively exploring and navigating large numbers of GeoJSON annotations in geographic maps.">
+  <meta name="keywords" content="HiGlass, Plugin Tracks, Insets, Geographic Maps, Openstreetmap, Mapbox, Exploration, Navigation, Guidance, Multiscale, 2D, Visualization">
+
+  <!-- Schema.org markup for Google+ -->
+  <meta itemprop="name" content="HiGlass Scalable Insets for Maps">
+  <meta itemprop="description" content="A new technique for interactively exploring and navigating large numbers of GeoJSON annotations in geographic maps.">
+  <meta itemprop="image" content="http://scalable-insets.lekschas.de/images/teaser-map.jpg">
+
+  <!-- Twitter Card data -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@flekschas">
+  <meta name="twitter:title" content="HiGlass Scalable Insets for Maps">
+  <meta name="twitter:description" content="A new technique for interactively exploring and navigating large numbers of GeoJSON annotations in geographic maps.">
+  <meta name="twitter:creator" content="@flekschas">
+  <!-- Twitter summary card with large image must be at least 280x150px -->
+  <meta name="twitter:image:src" content="http://scalable-insets.lekschas.de/images/teaser-map.jpg">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="HiGlass Scalable Insets for Maps" />
+  <meta property="og:description" content="A new technique for interactively exploring and navigating large numbers of GeoJSON annotations in geographic maps." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://github.com/flekschas/higlass-scalable-insets" />
+  <meta property="og:image" content="http://scalable-insets.lekschas.de/images/teaser-map.jpg" />
+
+  <title>HiGlass Scalable Insets for Maps</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
+  <link rel="stylesheet" href="hglib.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style-dark.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/16.4.2/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.4.2/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.8.2/pixi.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-bootstrap/0.32.1/react-bootstrap.min.js"></script>
+</head>
+<body>
+  <header id="topbar" tabindex="0">
+    <div id="title-wrapper" class="flex-c flex-jc-sb">
+      <h1 id="title">Scalable Insets</h1>
+      <ul class="flex-c menu">
+        <a href="/" class="no-select">Image</a>
+        <a href="/map.html" class="no-select active">Map</a>
+      </ul>
+    </div>
+    <section id="description">
+      <p>
+        A new technique for interactively exploring and navigating large numbers of annotations in <a href="/">gigapixel images</a>, <a href="/map.html">geographic maps</a>, and genome interaction matrices. <em class="more">More</em>
+      </p>
+      <div id="description-more">
+        <p>
+          This example features <a href="https://www.openstreetmap.org/#map=4/38.01/-95.84" target="_blank">OpenStreetMap</a> with <a href="http://emptypipes.org/largest-ski-areas" target="_blank">annotations for ski areas</a> around the world extracted by <a href="https://twitter.com/pkerpedjiev" target="_blank">Peter Kerpedjiev</a>.
+        </p>
+        <div id="links" class="flex-c flex-jc-sb">
+          <a href="https://www.youtube.com/watch?v=7Bn4mNLl3WQ" target="_blank">Video</a>
+          <a href="https://github.com/flekschas/higlass-scalable-insets" target="_blank">Source code</a>
+          <a href="http://scalable-insets.lekschas.de/" target="_blank">More info</a>
+        </div>
+      </div>
+    </section>
+  </header>
+  <div id="demo"></div>
+</body>
+<script src="higlass-geojson.js"></script>
+<script src="higlass-scalable-insets.min.js"></script>
+<script src="hglib.js"></script>
+<script>
+const viewConfig = {
+  editable: false,
+  zoomFixed: false,
+  trackSourceServers: ['http://higlass.io/api/v1'],
+  exportViewUrl: 'http://higlass.io/api/v1/viewconfs/',
+  views: [
+    {
+      initialXDomain: [-114.34492062432261, -103.1400637535123],
+      initialYDomain: [-46.99008821605368, -39.07861292139287],
+      tracks: {
+        center: [
+          {
+            type: 'combined',
+            contents: [
+              {
+                type: 'osm-tiles',
+                options: {
+                  name: 'World-wide Ski Areas',
+                },
+              },
+              {
+                server: 'https://vcg-higlass.rc.fas.harvard.edu/api/v1',
+                tilesetUid: 'ski-areas-preloaded',
+                uid: 'ski-areas',
+                type: 'geo-json',
+                options: {
+                  labelColor: 'red',
+                  labelPosition: 'hidden',
+                  trackBorderWidth: 0,
+                  trackBorderColor: 'red',
+                  rectangleDomainFillColor: 'red',
+                  rectangleDomainFillOpacity: 0.25,
+                  rectangleDomainStrokeColor: 'red',
+                  rectangleDomainOpacity: 1,
+                  rectanlgeMinSize: 3,
+                  minSquareSize: 4,
+                  polygonMinBoundingSize: 5,
+                  name: 'Ski Areas',
+                },
+              },
+              {
+                server: 'https://vcg-higlass.rc.fas.harvard.edu/api/v1/',
+                tilesetUid: 'ski-areas-preloaded',
+                uid: 'insets',
+                type: 'insets',
+                datatype: 'osm-image',
+                options: {
+                  minSize: 32,
+                  maxSize: 72,
+                  sizeStepSize: 2,
+                  scale: 1,
+                  scaleSizeBy: 'size',
+                  additionalZoom: 1,
+                  onClickScale: 3,
+                  fill: 'white',
+                  fillOpacity: 1,
+                  borderColor: 'white',
+                  borderWidth: 2,
+                  borderOpacity: 1,
+                  borderRadius: 4,
+                  leaderLineColor: 'white',
+                  leaderLineWidth: 3,
+                  leaderLineOpacity: 1,
+                  leaderLineFading: {
+                    0: 1,
+                    0.35: 0.33,
+                    0.65: 0.33,
+                    1: 1,
+                  },
+                  leaderLineStubWidthMin: 2,
+                  leaderLineStubWidthMax: 4,
+                  leaderLineStubLength: 12,
+                  leaderLineDynamic: true,
+                  leaderLineDynamicMinDist: 24,
+                  leaderLineDynamicMaxDist: 120,
+                  selectColor: 'red',
+                  dropDistance: 1,
+                  dropBlur: 3,
+                  dropOpacity: 0.8,
+                  opacity: 1,
+                  loadHiResOnScaleUp: true,
+                },
+              },
+            ],
+          },
+        ],
+      },
+      metaTracks: [
+        {
+          uid: 'c2a',
+          type: 'annotations-to-insets',
+          insetsTrack: 'insets',
+          options: {
+            annotationTracks: [
+              'ski-areas',
+            ],
+            insetThreshold: 64,
+          },
+        },
+      ],
+      layout: {
+        w: 12,
+        h: 12,
+        x: 0,
+        y: 0,
+        moved: false,
+        static: false,
+      },
+    },
+  ],
+};
+window.hglib.createHgComponent(
+  document.getElementById('demo'), viewConfig,
+  {
+    bounded: true, isDarkTheme: true, horizontalMargin: 0, verticalMargin: 0,
+  },
+);
+</script>
+</html>
