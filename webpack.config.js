@@ -5,13 +5,14 @@ const autoprefixer = require('autoprefixer');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const UnminifiedWebpackPlugin = require('unminified-webpack-plugin');
+const flexbugs = require('postcss-flexbugs-fixes');
 
-module.exports = {
+module.exports = (envs, argv) => ({
   output: {
     filename: 'higlass-scalable-insets.min.js',
-    library: 'higlass-scalable-insets',
+    library: 'higlassScalableInsets',
     libraryTarget: 'umd',
     path: path.resolve(__dirname, 'dist'),
   },
@@ -20,15 +21,15 @@ module.exports = {
       path.join(__dirname, 'node_modules/higlass/build'),
       path.join(__dirname, 'node_modules/higlass-geojson/dist'),
       path.join(__dirname, 'node_modules/higlass-image/dist'),
+      path.join(__dirname, 'examples'),
     ],
     watchContentBase: true,
   },
   optimization: {
     minimizer: [
-      new UglifyJsPlugin({
+      new TerserPlugin({
         cache: true,
         parallel: true,
-        sourceMap: false,
       }),
       new OptimizeCssAssetsPlugin({}),
     ],
@@ -54,7 +55,7 @@ module.exports = {
           loader: 'eslint-loader',
         },
       },
-      // Transpile the ESD6 files to ES5
+      // Transpile the ES6 to ES5
       {
         test: /\.js$/,
         exclude: /node_modules/,
@@ -81,7 +82,7 @@ module.exports = {
             loader: 'postcss-loader',
             options: {
               plugins: () => [
-                require('postcss-flexbugs-fixes'),
+                flexbugs,
                 autoprefixer({
                   browsers: [
                     '>1%',
@@ -95,16 +96,6 @@ module.exports = {
             },
           },
           'sass-loader',  // compiles Sass to CSS
-        ],
-      },
-      // Extract them HTML files
-      {
-        test: /\.html$/,
-        use: [
-          {
-            loader: 'html-loader',
-            options: { minimize: true },
-          },
         ],
       },
       {
@@ -122,15 +113,22 @@ module.exports = {
   },
   plugins: [
     new HtmlWebPackPlugin({
-      template: './src/index.html',
+      template: './examples/index.html',
       filename: './index.html',
+      isProduction: argv.mode === 'production',
+    }),
+    new HtmlWebPackPlugin({
+      template: './examples/map.html',
+      filename: './map.html',
+      isProduction: argv.mode === 'production',
+    }),
+    new HtmlWebPackPlugin({
+      template: './examples/hic.html',
+      filename: './hic.html',
+      isProduction: argv.mode === 'production',
     }),
     new UnminifiedWebpackPlugin(),
     // new BundleAnalyzerPlugin(),
-    new CopyWebpackPlugin([
-      { from: './src/example-image.html', to: './example-image.html' },
-      { from: './src/example-map.html', to: './example-map.html' },
-    ]),
   ],
   externals: {
     'pixi.js': {
@@ -140,4 +138,4 @@ module.exports = {
       root: 'PIXI',
     },
   },
-};
+});
