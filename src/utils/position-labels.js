@@ -55,7 +55,7 @@ const intersect = (x1, x2, x3, x4, y1, y2, y3, y4) => {
   const numera = ((x4 - x3) * (y1 - y3)) - ((y4 - y3) * (x1 - x3));
   const numerb = ((x2 - x1) * (y1 - y3)) - ((y2 - y1) * (x1 - x3));
 
-  /* Is the intersection along the the segments */
+  /* Is the intersection along the segments */
   const mua = numera / denom;
   const mub = numerb / denom;
 
@@ -179,9 +179,12 @@ const mcmove = (currT) => {
   const newEnergy = energy(i, moveX, moveY);
 
   // delta E
-  const deltaEnergy = newEnergy - oldEnergy;
+  const deltaEnergy = oldEnergy - newEnergy;
 
-  if (Math.random() < Math.exp(-deltaEnergy / currT)) {
+  // Math.exp(x) where x is positive is always greater than 1. Hence, moves
+  // that lower the energy will always be accepted.
+  // Additionally, th
+  if (Math.exp(deltaEnergy / currT) > Math.random()) {
     acc += 1;
   } else {
     // move back to old coordinates
