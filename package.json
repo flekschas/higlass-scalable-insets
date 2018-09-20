@@ -1,13 +1,14 @@
 {
   "name": "higlass-scalable-insets",
   "version": "0.1.0",
-  "description": "Scalable Insets for highlighting and exploring annotations in HiGlass",
+  "description": "Scalable Insets track for highlighting and exploring annotations in HiGlass",
   "keywords": [
     "HiGlass",
     "Track",
     "Insets",
     "Annotations",
-    "Patterns"
+    "Patterns",
+    "Plugin Track"
   ],
   "author": "Fritz Lekschas",
   "license": "MIT",
@@ -26,8 +27,23 @@
   "files": [
     "dist"
   ],
+  "scripts": {
+    "build": "rm -rf dist/*; webpack --mode production",
+    "start": "webpack-dev-server --mode development --open",
+    "prerelease": "npm run build; zip -r dist.zip dist"
+  },
+  "dependencies": {
+    "@pixi/filter-drop-shadow": "^2.6.0",
+    "d3-color": "^1.2.3",
+    "d3-geo": "^1.11.1",
+    "d3-scale": "^2.1.2",
+    "fastpriorityqueue": "github:flekschas/FastPriorityQueue.js",
+    "higlass-register": "^0.1.0",
+    "hull.js": "^0.2.10",
+    "liang-barsky": "^1.0.1"
+  },
   "devDependencies": {
-    "autoprefixer": "^8.3.0",
+    "autoprefixer": "^9.1.5",
     "babel-core": "^6.26.0",
     "babel-eslint": "^8.2.2",
     "babel-loader": "^7.1.4",
@@ -36,7 +52,7 @@
     "babel-polyfill": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "copy-webpack-plugin": "^4.5.1",
-    "css-loader": "^0.28.11",
+    "css-loader": "^1.0.0",
     "eslint": "^4.19.1",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-loader": "^2.0.0",
@@ -44,38 +60,21 @@
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.7.0",
     "file-loader": "^1.1.11",
-    "higlass": "^1.0.0-alpha.12",
-    "higlass-geojson": "^0.1.2",
+    "higlass": "^1.2.3",
+    "higlass-geojson": "^0.2.0",
     "higlass-image": "^0.1.2",
-    "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.1.0",
-    "node-sass": "^4.8.3",
-    "optimize-css-assets-webpack-plugin": "^4.0.0",
-    "postcss-flexbugs-fixes": "^3.3.0",
-    "postcss-loader": "^2.1.4",
-    "sass-loader": "^7.0.1",
-    "style-loader": "^0.21.0",
-    "uglifyjs-webpack-plugin": "^1.2.5",
+    "node-sass": "^4.9.3",
+    "optimize-css-assets-webpack-plugin": "^5.0.1",
+    "postcss-flexbugs-fixes": "^4.1.0",
+    "postcss-loader": "^3.0.0",
+    "sass-loader": "^7.1.0",
+    "style-loader": "^0.23.0",
+    "terser-webpack-plugin": "^1.1.0",
     "unminified-webpack-plugin": "^2.0.0",
-    "webpack": "^4.6.0",
-    "webpack-bundle-analyzer": "^2.11.1",
-    "webpack-cli": "^2.0.13",
-    "webpack-dev-server": "^3.1.1"
-  },
-  "scripts": {
-    "build": "webpack --mode production",
-    "start": "webpack-dev-server --mode development --open",
-    "prerelease": "rm -rf dist/*; npm run build; zip -r dist.zip dist"
-  },
-  "dependencies": {
-    "@pixi/filter-drop-shadow": "^2.6.0",
-    "d3-color": "^1.1.0",
-    "d3-geo": "^1.10.0",
-    "d3-scale": "^2.0.0",
-    "fastpriorityqueue": "github:flekschas/FastPriorityQueue.js",
-    "higlass-register": "^0.1.0",
-    "hull.js": "^0.2.10",
-    "liang-barsky": "^1.0.1",
-    "slugid": "^1.1.0"
+    "webpack": "^4.19.1",
+    "webpack-bundle-analyzer": "^3.0.2",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.8"
   }
 }
