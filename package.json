@@ -40,7 +40,8 @@
     "fastpriorityqueue": "github:flekschas/FastPriorityQueue.js",
     "higlass-register": "^0.1.0",
     "hull.js": "^0.2.10",
-    "liang-barsky": "^1.0.1"
+    "liang-barsky": "^1.0.1",
+    "line-seg-intersect": "^1.0.0"
   },
   "devDependencies": {
     "autoprefixer": "^9.1.5",

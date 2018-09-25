@@ -1,73 +1,74 @@
+import lineSegIntersect from 'line-seg-intersect';
+
 import max from './max';
 import min from './min';
 
 /**
  * Label positioner using simulated annealing.
  *
- * This code is heavily based on D3 Labeler
- *   (https://github.com/tinker10/D3-Labeler) but extended to support
- *   non-anchor obstacles.
+ * This code is based on D3 Labeler (https://github.com/tinker10/D3-Labeler)
+ * but heavily extended to support non-anchor obstacles.
  */
 
-let lab = [];
-let anc = [];
+let labHot = [];
+let labCold = [];
+const labAll = [[], []];
+let ano = [];
 let w = 1; // box width
 let h = 1; // box height
-let area = w * h; // image area
-let areaQ = area / 4; // image area
-let padding = 1;
+// let area = w * h; // image area
+// let areaQ = area / 4; // image area
+let padding = 2;
 
-const maxMove = 25.0;
+const maxMove = 12.0;
 // const maxAngle = 0.5;
 let acc = 0;  // eslint-disable-line
 let rej = 0;  // eslint-disable-line
 
 // weights
-const wLen = 5.0; // leader line length
-const wInter = 50.0; // leader line intersection
-const wLabLab = 50.0; // label-label overlap
-const wLabOrg = 50.0; // additional label-origin overlap weights (added to `wLabAnc`)
-const wLabAnc = 10.0; // overlap between label and other anchors (i.e., annotations)
-const wMove = 1.0; // restrict random moves
+const wLen = 1.0; // leader line length
+const wInter = 1.0; // leader line intersection
+const wLabLab = 2.0; // label-label overlap
+const wLabOrg = 2.0; // label-origin overlap
+const wLabAno = 0.5; // label-anchor (i.e., annotations)
+const wMove = 0.2; // restrict random moves
+const wLabLabD = 0.5; // min distance between labels
+const wLabOriD = 0.5; // min distance between labels and origins
+const wLabAnoD = 0.25; // min distance between labels and other annotations (anchors)
 
-let wLenBoost = 1.0; // leader line length
-let wInterBoost = 1.0; // leader line intersection
-let wLabLabBoost = 1.0; // label-label overlap
-let wLabOrgBoost = 1.0; // additional label-origin overlap weights (added to `wLabAnc`)
-let wLabAncBoost = 1.0; // overlap between label and other anchors (i.e., annotations)
-let wMoveBoost = 1.0; // restrict random moves
-let wAncSizeBoost = 1.0;
-let wAncSizeBoostThres = Infinity;
+// boosts
+// Note: we separate weights from boosts so that `1` will always reset the
+// boosted weights and the user doesn't need to remember (know) the weights at
+// all.
+let bLen = 1.0;
+let bInter = 1.0;
+let bLabLab = 1.0;
+let bLabOrg = 1.0;
+let bLabAno = 1.0;
+let bMove = 1.0;
+let bLabLabD = 1.0;
+let bLabOriD = 1.0;
+let bLabAnoD = 1.0;
 
-let wLenBoosted = wLen;
-let wInterBoosted = wInter;
-let wLabLabBoosted = wLabLab;
-let wLabOrgBoosted = wLabOrg;
-let wLabAncBoosted = wLabAnc;
-let wMoveBoosted = wMove;
+// bw == boosted weights
+let bwLen = wLen;
+let bwInter = wInter;
+let bwLabLab = wLabLab;
+let bwLabOrg = wLabOrg;
+let bwLabAno = wLabAno;
+let bwMove = wMove;
+let bwLabLabD = wLabLabD;
+let bwLabOriD = wLabOriD;
+let bwLabAnoD = wLabAnoD;
 
 let is1dOnly = false;
 
-// returns true if two lines intersect, else false
-// from http://paulbourke.net/geometry/lineline2d/
-const intersect = (x1, x2, x3, x4, y1, y2, y3, y4) => {
-  const denom = ((y4 - y3) * (x2 - x1)) - ((x4 - x3) * (y2 - y1));
-  const numera = ((x4 - x3) * (y1 - y3)) - ((y4 - y3) * (x1 - x3));
-  const numerb = ((x2 - x1) * (y1 - y3)) - ((y2 - y1) * (x1 - x3));
-
-  /* Is the intersection along the segments */
-  const mua = numera / denom;
-  const mub = numerb / denom;
-
-  return (!(mua < 0 || mua > 1 || mub < 0 || mub > 1));
-};
-
 // energy function, tailored for label placement
 const energy = (index, moveX, moveY) => {
-  const m = lab.length;
-  const n = anc.length;
+  const m = labHot.length + labCold.length;
+  const n = ano.length;
   const mn = max(m, n);
-  const l = lab[index];
+  const l = labHot[index];
   let ener = 0;
   const dx = l.x - l.oX;
   const dy = l.y - l.oY;
@@ -75,93 +76,115 @@ const energy = (index, moveX, moveY) => {
   // Used for pushing labels away from their own origin if they are too close
   const pWH = (padding / 2) + l.wH;
   const pHH = (padding / 2) + l.hH;
-  const distCenterToBorder = Math.sqrt((pWH * pWH) + (pHH * pHH));
+  // Optimal distance, which is the radius from the insets center to the corner
+  // of the padded bounding box.
+  const distOpt = Math.sqrt((pWH * pWH) + (pHH * pHH));
   let overlap = true;
-  // let amount = 0;
-  // let theta = 0;
 
   // penalty for length of leader line
-  ener += Math.abs(dist - distCenterToBorder) * wLenBoosted * l.locality;
+  // normalized by `distOpt`
+  const pd = Math.abs(dist - distOpt) / distOpt;
 
   // penalty for moving at all
-  ener += Math.sqrt((moveX * moveX) + (moveY * moveY)) * wMoveBoosted;
+  // normalized by `distOpt`
+  const pm = Math.sqrt((moveX * moveX) + (moveY * moveY)) / distOpt;
 
-  const x21 = l.x - l.wH - padding;
-  const y21 = l.y - l.hH - padding;
-  const x22 = l.x + l.wH + padding;
-  const y22 = l.y + l.hH + padding;
-  let x11;
-  let x12;
-  let y11;
-  let y12;
+  // Need to recompute x and y start and end positions
+  const lx1 = l.x - l.wH - padding;
+  const ly1 = l.y - l.hH - padding;
+  const lx2 = l.x + l.wH + padding;
+  const ly2 = l.y + l.hH + padding;
+
   let xOverlap;
   let yOverlap;
+  let pllc = 0;
+  let pllo = 0;
+  let plld = 0;
+  let plao = 0;
+  let ploo = 0;
+  let plod = 0;
+  let plad = 0;
 
-  // For every annotation or label
-  // Note: we know that the first m anchors are the label origins
-  for (let i = 0; i < mn; i++) {
-    // For every other label (m = number of labels)
-    if (i !== index && i < m) {
-      const otherLabel = lab[i];
+  for (let labType = 0; labType < 2; labType++) {
+    const currLabs = labAll[labType];
+    for (let i = 0; i < currLabs.length; i++) {
+      if (i === index && labType === 0) continue;  // eslint-disable-line no-continue
+
+      const otherLabel = currLabs[i];
       // Test if leader lines intersect...
-      overlap = intersect(
-        anc[index].x,
+      overlap = lineSegIntersect(
+        l.oX,
         l.x,
-        anc[i].x,
+        otherLabel.oX,
         otherLabel.x,
-        anc[index].y,
+        l.oY,
         l.y,
-        anc[i].y,
+        otherLabel.oY,
         otherLabel.y,
       );
 
       // ...and add a penalty if they do
-      if (overlap) ener += wInterBoosted;
+      if (overlap) pllc++;
 
       // Penalty for label-label overlap
-      x11 = otherLabel.x - otherLabel.wH - 1;
-      y11 = otherLabel.y - otherLabel.hH - 1;
-      x12 = otherLabel.x + otherLabel.wH + 1;
-      y12 = otherLabel.y + otherLabel.hH + 1;
-      xOverlap = max(0, min(x12, x22) - max(x11, x21));
-      yOverlap = max(0, min(y12, y22) - max(y11, y21));
-      ener += xOverlap * yOverlap * wLabLabBoosted;
-    }
+      xOverlap = max(0, min(otherLabel.x2, lx2) - max(otherLabel.x1, lx1));
+      yOverlap = max(0, min(otherLabel.y2, ly2) - max(otherLabel.y1, ly1));
+      pllo += xOverlap * yOverlap / min(l.a, otherLabel.a);
 
-    // penalty for label-anchor overlap
-    x11 = anc[i].x - anc[i].wH - 1;
-    y11 = anc[i].y - anc[i].hH - 1;
-    x12 = anc[i].x + anc[i].wH + 1;
-    y12 = anc[i].y + anc[i].hH + 1;
-    xOverlap = max(0, min(x12, x22) - max(x11, x21));
-    yOverlap = max(0, min(y12, y22) - max(y11, y21));
-    let wLabAncExtraBoost = 1.0;
-    if (wAncSizeBoost !== 1.0) {
-      const ancArea = anc[i].wH * anc[i].hH * 4;
-      const relArea = min(1, max(0, ancArea - wAncSizeBoostThres) / areaQ);
-      wLabAncExtraBoost = 1 - ((1 - wAncSizeBoost) * relArea);
+      // Penalty for label-label distance
+      const d = Math.sqrt(((l.x - ano[i].oX) ** 2) + ((l.y - ano[i].oY) ** 2));
+      plld += max(0, (distOpt - d) / distOpt);
     }
-    ener += xOverlap * yOverlap * (
-      (wLabAncBoosted * wLabAncExtraBoost) + (wLabOrgBoosted * (i < m))
-    );
   }
-  return ener;
+
+  // For every annotation or label
+  // Note: we know that the first m anchors are the label's corresponding
+  // origins
+  for (let i = 0; i < mn; i++) {
+    xOverlap = max(0, min(ano[i].oX2, lx2) - max(ano[i].oX1, lx1));
+    yOverlap = max(0, min(ano[i].oY2, ly2) - max(ano[i].oY1, ly1));
+    const d = Math.sqrt(((l.x - ano[i].oX) ** 2) + ((l.y - ano[i].oY) ** 2));
+
+    if (i < m) {
+      // penalty for label-origin overlap and distance
+      ploo += xOverlap * yOverlap / ano[i].oA;
+      plod += max(0, (distOpt - d) / distOpt);
+    } else {
+      // penalty for label-anchor overlap and distance
+      plao += xOverlap * yOverlap / ano[i].oA;
+      plad += max(0, (distOpt - d) / distOpt);
+    }
+  }
+
+  ener = (
+    (pd * bwLen)
+    + (pllc * bwInter)
+    + (pllo * bwLabLab)
+    + (plld * bwLabLabD)
+    + (plao * bwLabAno)
+    + (plad * bwLabAnoD)
+    + (ploo * bwLabOrg)
+    + (plod * bwLabOriD)
+  );
+
+  return [ener, pm];
 };
 
 // Monte Carlo translation move
-const mcmove = (currT) => {
+const mcMove = (cooling) => {
   // select a random label
-  const i = (Math.random() * lab.length) | 0;  // Bit-wise floor()
-  const l = lab[i];
+  const i = (Math.random() * labHot.length) | 0;  // Bit-wise floor()
+  const l = labHot[i];
 
   // save old coordinates
   const xOld = l.x;
   const yOld = l.y;
 
-  // old energy
-  const oldEnergy = energy(i, 0, 0);
+  // old energy: needs to be recalculated becayse new insets might have appeared
+  // const oldEnergy = l.e === undefined ? energy(i, 0, 0)[0] : l.e;
+  const oldEnergy = energy(i, 0, 0)[0];
 
-  const getRndMove = () => (Math.random() - 0.5) * maxMove * max(0.5, currT);
+  const getRndMove = () => ((2 * Math.random()) - 1) * maxMove * max(0.5, l.t);
 
   // random translation
   const moveX = +(((is1dOnly * !l.isVerticalOnly) + !is1dOnly) && getRndMove());
@@ -169,113 +192,63 @@ const mcmove = (currT) => {
   l.x += moveX;
   l.y += moveY;
 
-  // hard wall boundaries
-  // if (l.x > w) l.x = xOld;
-  // if (l.x < 0) l.x = xOld;
-  // if (l.y > h) l.y = yOld;
-  // if (l.y < 0) l.y = yOld;
-
   // new energy
-  const newEnergy = energy(i, moveX, moveY);
+  const [
+    newEnergy,
+    penaltyMove,
+  ] = energy(i, moveX, moveY);
 
   // delta E
-  const deltaEnergy = oldEnergy - newEnergy;
+  const deltaEnergy = oldEnergy - (newEnergy + (penaltyMove * bwMove));
 
   // Math.exp(x) where x is positive is always greater than 1. Hence, moves
   // that lower the energy will always be accepted.
-  // Additionally, th
-  if (Math.exp(deltaEnergy / currT) > Math.random()) {
+  const r = Math.random();
+  if (deltaEnergy > 0 || Math.exp(deltaEnergy / l.t) > r) {
     acc += 1;
+    l.e = newEnergy;
   } else {
     // move back to old coordinates
     l.x = xOld;
     l.y = yOld;
     rej += 1;
   }
+
+  l.t = cooling(l.t);
 };
 
-// Monte Carlo rotation move
-// const mcrotate = (currT) => {
-//   // select a random label
-//   const i = (Math.random() * lab.length) | 0;
-
-//   // save old coordinates
-//   const xOld = lab[i].x;
-//   const yOld = lab[i].y;
-
-//   // old energy
-//   const oldEnergy = energy(i);
-
-//   // random angle
-//   const angle = (Math.random() - 0.5) * maxAngle;
-
-//   const s = Math.sin(angle);
-//   const c = Math.cos(angle);
-
-//   // translate label (relative to anchor at origin):
-//   lab[i].x -= anc[i].x;
-//   lab[i].y -= anc[i].y;
-
-//   // rotate label
-//   const xNew = (lab[i].x * c) - (lab[i].y * s);
-//   const yNew = (lab[i].x * s) + (lab[i].y * c);
-
-//   // translate label back
-//   lab[i].x = xNew + anc[i].x;
-//   lab[i].y = yNew + anc[i].y;
-
-//   // hard wall boundaries
-//   if (lab[i].x > w) lab[i].x = xOld;
-//   if (lab[i].x < 0) lab[i].x = xOld;
-//   if (lab[i].y > h) lab[i].y = yOld;
-//   if (lab[i].y < 0) lab[i].y = yOld;
-
-//   // new energy
-//   const newEnergy = energy(i);
-
-//   // delta E
-//   const deltaEnergy = newEnergy - oldEnergy;
-
-//   if (Math.random() < Math.exp(-deltaEnergy / currT)) {
-//     acc += 1;
-//   } else {
-//     // move back to old coordinates
-//     lab[i].x = xOld;
-//     lab[i].y = yOld;
-//     rej += 1;
-//   }
-// };
-
-// linear cooling
-const coolingSchedule = (currT, initialT, nsweeps) => (currT - (initialT / nsweeps));
-
-const setFinalWeights = () => {
-  wLenBoosted = wLen * wLenBoost;
-  wInterBoosted = wInter * wInterBoost;
-  wLabLabBoosted = wLabLab * wLabLabBoost;
-  wLabOrgBoosted = wLabOrg * wLabOrgBoost;
-  wLabAncBoosted = wLabAnc * wLabAncBoost;
-  wMoveBoosted = wMove * wMoveBoost;
+const boostWeights = () => {
+  bwLen = wLen * bLen;
+  bwInter = wInter * bInter;
+  bwLabLab = wLabLab * bLabLab;
+  bwLabOrg = wLabOrg * bLabOrg;
+  bwLabAno = wLabAno * bLabAno;
+  bwMove = wMove * bMove;
+  bwLabLabD = wLabLabD * bLabLabD;
+  bwLabOriD = wLabOriD * bLabOriD;
+  bwLabAnoD = wLabAnoD * bLabAnoD;
 };
 
 const labeler = {};
 
-// main simulated annealing function
-labeler.start = (nsweeps, t = 1.0) => {
-  setFinalWeights();
+// linear cooling
+// const coolingLinear = (initialT, nsweeps) => currT => currT - (initialT / nsweeps);
 
-  const m = lab.length;
-  const initialT = t;
-  let currT = initialT;
+// linear cooling
+const coolingExp = beta => t => t * beta;
+
+
+// main simulated annealing function
+labeler.start = (nsweeps, beta = 0.8) => {
+  boostWeights();
+
+  const m = labHot.length;
+  const cooling = coolingExp(beta);
 
   for (let i = 0; i < nsweeps; i++) {
     for (let j = 0; j < m; j++) {
-      mcmove(currT);
-      // Fritz: ignoring rotations for now
-      // if (Math.random() < 0.5) mcmove(currT);
-      // else mcrotate(currT);
+      mcMove(cooling);
     }
-    currT = coolingSchedule(currT, initialT, nsweeps);
   }
 };
 
@@ -283,8 +256,8 @@ labeler.width = (x) => {
 // users insert graph width
   if (!arguments.length) return w;
   w = x;
-  area = w * h;
-  areaQ = area / 4;
+  // area = w * h;
+  // areaQ = area / 4;
   return labeler;
 };
 
@@ -292,48 +265,56 @@ labeler.height = (x) => {
 // users insert graph height
   if (!arguments.length) return h;
   h = x;
-  area = w * h;
-  areaQ = area / 4;
+  // area = w * h;
+  // areaQ = area / 4;
   return labeler;
 };
 
-// users insert label positions
-labeler.label = (x) => {
-  if (!arguments.length) return lab;
-  lab = x;
+// insets to be positioned (i.e., t > 0)
+labeler.labelsHot = (x) => {
+  if (!arguments.length) return labHot;
+  labHot = x;
+  labAll[0] = labHot;
+  return labeler;
+};
+
+// passive insets (i.e., t === 0)
+labeler.labelsCold = (x) => {
+  if (!arguments.length) return labCold;
+  labCold = x;
+  labAll[1] = labCold;
   return labeler;
 };
 
 // users insert anchor positions
-labeler.anchor = (x) => {
-  if (!arguments.length) return anc;
-  anc = x;
+labeler.annotations = (x) => {
+  if (!arguments.length) return ano;
+  ano = x;
   return labeler;
 };
 
-labeler.boost = (weight, booster, threshold) => {
+labeler.boost = (weight, booster) => {
   // user-defined weight boosting
   if (!arguments.length) return labeler;
   switch (weight) {
     case 'locality':
-      wLenBoost = booster;
+      bLen = booster;
       break;
     case 'context':
-      wLabOrgBoost = booster;
-      wLabAncBoost = booster;
-      break;
-    case 'contextAnc':
-      wAncSizeBoost = booster;
-      wAncSizeBoostThres = threshold;
+      bLabOrg = booster;
+      bLabAno = booster;
+      bLabOriD = 0.5 * booster;
+      bLabAnoD = 0.5 * booster;
       break;
     case 'details':
-      wLabLabBoost = booster;
+      bLabLab = booster;
+      bLabLabD = 0.25 * booster;
       break;
     case 'leaderlineIntersections':
-      wInterBoost = booster;
+      bInter = booster;
       break;
     case 'movement':
-      wMoveBoost = booster;
+      bMove = booster;
       break;
     default:
       // Nothing
