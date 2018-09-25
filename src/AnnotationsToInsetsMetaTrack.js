@@ -249,7 +249,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
      */
     buildTree() {
       if (!this.drawnAnnotations.length && !this.annosToBeDrawnAsInsets.size) {
-        // Remove all exlisting cluisters
+        // Remove all exlisting clusters
         this.areaClusterer.cleanUp(new KeySet());
         return;
       }
@@ -382,7 +382,10 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
      */
     createInsets() {
       this.clusterAnnotations();
-      this.drawInsets(this.positionInsets());
+      const borderScale = this.insetsTrack.options.scaleBorderBy
+        ? this.compInsetBorderScale()
+        : undefined;
+      this.drawInsets(this.positionInsets(borderScale), borderScale);
     }
 
     clusterAnnotations() {
@@ -399,12 +402,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
      * @param  {KeySet}  insets  Inset positions to be drawn.
      * @return  {Object}  Promise resolving once all insets are drawn.
      */
-    drawInsets(insets) {
-      let borderScale;
-      if (this.insetsTrack.options.scaleBorderBy) {
-        borderScale = this.compInsetBorderScale();
-      }
-
+    drawInsets(insets, borderScale) {
       return Promise.all(this.insetsTrack.drawInsets(insets, borderScale))
         .then(() => { this.animate(); })
         .catch((e) => {
@@ -436,12 +434,12 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
      *
      * @return  {Array}  Position and dimension of the insets.
      */
-    positionInsets() {
+    positionInsets(borderScale) {
       if (!this.annosToBeDrawnAsInsets.size) return new KeySet();
 
       return this.insetsTrack.positioning.location === 'gallery'
-        ? this.positionInsetsGallery()
-        : this.positionInsetsCenter();
+        ? this.positionInsetsGallery(this.areaClusterer.clusters, borderScale)
+        : this.positionInsetsCenter(this.areaClusterer.clusters, borderScale);
     }
 
     /**
@@ -450,15 +448,24 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
      * @param  {KeySet}  areaClusters  Set of area clusters.
      * @return  {Array}  Position and dimension of the insets.
      */
-    positionInsetsCenter(areaClusters = this.areaClusterer.clusters) {
-      let anchors = this.drawnAnnotations.map(annotation => ({
-        t: 1.0,
-        x: (annotation.maxX + annotation.minX) / 2,
-        y: (annotation.maxY + annotation.minY) / 2,
+    positionInsetsCenter(
+      areaClusters = this.areaClusterer.clusters,
+      borderScale,
+    ) {
+      // Annotations that are either excluded as insets or too big for insets
+      const annotations = this.drawnAnnotations.map(annotation => ({
         oX: (annotation.maxX + annotation.minX) / 2,  // Origin x
         oY: (annotation.maxY + annotation.minY) / 2,  // Origin y
-        wH: (annotation.maxX - annotation.minX) / 2,  // Width half
-        hH: (annotation.maxY - annotation.minY) / 2,  // Heigth half
+        oX1: annotation.minX,
+        oX2: annotation.maxX,
+        oY1: annotation.minY,
+        oY2: annotation.maxY,
+        oWH: (annotation.maxX - annotation.minX) / 2,  // Width half
+        oHH: (annotation.maxY - annotation.minY) / 2,  // Heigth half
+        oA: (
+          (annotation.maxX - annotation.minX)
+          * (annotation.maxY - annotation.minY)
+        ),  // Area
       }));
 
       const {
@@ -469,12 +476,17 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
         .translate((cluster) => {
           const id = cluster.id;
 
+          let borderWidth = this.insetsTrack.options.borderWidth;
+          if (borderScale) {
+            borderWidth += borderScale(this.clusterBorderPropAcc(cluster));
+          }
+
           if (!this.insets[id]) {
             const { width, height } = this.compInsetSize(cluster, finalRes);
 
             // Create new Label for the AreaCluster
             this.insets[id] = new LabelCluster(id)
-              .setDim(width, height)
+              .setDim(width, height, borderWidth)
               .setSrc(cluster);
           } else {
             // Update existing inset positions
@@ -487,20 +499,36 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
             this.insets[id].oY = newOy;
             this.insets[id].oWH = (cluster.maxX - cluster.minX) / 2;
             this.insets[id].oHH = (cluster.maxY - cluster.minY) / 2;
+            this.insets[id].oX1 = this.insets[id].oX - this.insets[id].oWH;
+            this.insets[id].oX2 = this.insets[id].oX + this.insets[id].oWH;
+            this.insets[id].oY1 = this.insets[id].oY - this.insets[id].oHH;
+            this.insets[id].oY2 = this.insets[id].oY + this.insets[id].oHH;
+            this.insets[id].oA = this.insets[id].oWH * this.insets[id].oHH * 4;
 
             this.insets[id].x -= dX;
             this.insets[id].y -= dY;
 
-            this.insets[id].t = this.scaleChanged ? 0.5 : 0;
+            this.insets[id].t = this.scaleChanged ? 0.25 : 0;
+
+            this.insets[id].borderWidth = borderWidth;
 
             if (cluster.isChanged || newResScale) {
-              const { width, height } = this.compInsetSize(cluster, finalRes);
+              let { width, height } = this.compInsetSize(cluster, finalRes);
+              width += borderWidth * 2;
+              height += borderWidth * 2;
 
               this.insets[id].width = width;
               this.insets[id].height = height;
               this.insets[id].wH = width / 2;
               this.insets[id].hH = height / 2;
+              this.insets[id].a = width * height;
             }
+
+            // Precompute [x,y] start and end
+            this.insets[id].x1 = this.insets[id].x - this.insets[id].wH;
+            this.insets[id].x2 = this.insets[id].x + this.insets[id].wH;
+            this.insets[id].y1 = this.insets[id].y - this.insets[id].hH;
+            this.insets[id].y2 = this.insets[id].y + this.insets[id].hH;
 
             if (newResScale) {
               // Let them wobble a bit because the size changed
@@ -511,33 +539,28 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
           return this.insets[id];
         }));
 
-      const insetsToBePositioned = insets.filter(inset => inset.t);
-      const anchorInsets = insets.filter(inset => inset.t);
+      const insetsHot = insets.filter(inset => inset.t);
+      const insetsCold = insets.filter(inset => !inset.t);
 
-      // Prepend insets as the annealer assumes the first i anchors correspond to
-      // the i insets.
-      anchors = [
-        ...insetsToBePositioned.values, ...anchors, ...anchorInsets.values,
-      ];
-
-      if (insetsToBePositioned.size) {
+      if (insetsHot.size) {
         // const t0 = performance.now();
-        const n = insetsToBePositioned.size;
+        const n = insetsHot.size;
 
         const boostLayoutInit = this.isInit ? this.boostLayoutInit : 1;
 
         positionLabels
-          // Insets, i.e., labels
-          .label(insetsToBePositioned.values)
+          // Hot labels, i.e., insets with a temperature > 0
+          .labelsHot(insetsHot.values)
+          // Cold labels, i.e., insets with a temperature == 0
+          .labelsCold(insetsCold.values)
           // Anchors, i.e., label origins, already positioned labels, and other
           // annotations
-          .anchor(anchors)
+          .annotations([...insets.values, ...annotations])
           .width(this.insetsTrack.dimensions[0])
           .height(this.insetsTrack.dimensions[1])
           .padding(this.insetOriginPadding)
           .is2d()
           .boost('context', this.boostContext)
-          .boost('contextAnc', this.bigAnnosBoost, this.bigAnnosBoostArea)
           .boost('details', this.boostDetails)
           .boost('locality', this.boostLocality)
           .start(
@@ -547,6 +570,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
                 100 * this.boostLayout * boostLayoutInit * Math.log(n) / n,
               ),
             ),
+            0.02,
           );
 
         this.isInit = false;
@@ -564,31 +588,35 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
      * @param  {KeySet}  areaClusters  Set of area clusters.
      * @return  {Array}  Position and dimension of the insets.
      */
-    positionInsetsGallery(areaClusters = this.areaClusterer.clusters) {
+    positionInsetsGallery(
+      areaClusters = this.areaClusterer.clusters, borderScale,
+    ) {
       const {
         finalRes, newResScale,
       } = this.compInsetSizeScale(areaClusters);
 
       // 1. Position insets to the closest position on the gallery border
       const insets = this.positionInsetsGalleryNearestBorder(
-        areaClusters, finalRes, newResScale,
+        areaClusters, finalRes, newResScale, borderScale,
       );
 
       // 2. Optimize position using simulated annealing
-      const insetsToBeAnnealed = insets.filter(inset => inset.t);
+      const insetsHot = insets.filter(inset => inset.t);
+      const insetsCold = insets.filter(inset => !inset.t);
 
-      if (insetsToBeAnnealed.size) {
+      if (insetsHot.size) {
         // const t0 = performance.now();
-        const n = insetsToBeAnnealed.size;
+        const n = insetsHot.size;
 
         const boostLayoutInit = this.isInit ? this.boostLayoutInit : 1;
 
         positionLabels
           // Insets, i.e., labels
-          .label(insetsToBeAnnealed.values)
+          .labelsHot(insetsHot.values)
+          .labelsHot(insetsCold.values)
           // We only need the labels origin. Other anchors do not matter as the
           // insets are on the boundary
-          .anchor(insetsToBeAnnealed.values)
+          .annotations(insets.values)
           .width(this.insetsTrack.dimensions[0])
           .height(
             this.insetsTrack.dimensions[1] -
@@ -629,7 +657,9 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
      * @return  {array}  List of inset definitions holding the border position,
      *   pixel size, origin, and remote size.
      */
-    positionInsetsGalleryNearestBorder(areaClusters, finalRes, newResScale) {
+    positionInsetsGalleryNearestBorder(
+      areaClusters, finalRes, newResScale, borderScale,
+    ) {
       // Maximum inset pixel size
       const insetMaxSize = (
         this.insetsTrack.insetMaxSize * this.insetsTrack.insetScale
@@ -664,6 +694,12 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
 
       return new KeySet('id', areaClusters.translate((cluster) => {
         const c = this.insets[cluster.id];
+
+        let borderWidth = this.insetsTrack.options.borderWidth;
+        if (borderScale) {
+          borderWidth += borderScale(this.clusterBorderPropAcc(cluster));
+        }
+
         if (c) {
           // Update existing inset positions
           const newOx = ((cluster.maxX + cluster.minX) / 2) + offX;
@@ -675,11 +711,24 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
           c.oY = newOy;
           c.oWH = (cluster.maxX - cluster.minX) / 2;
           c.oHH = (cluster.maxY - cluster.minY) / 2;
+          c.oX1 = c.oX - c.oWH;
+          c.oX2 = c.oX + c.oWH;
+          c.oY1 = c.oY - c.oHH;
+          c.oY2 = c.oY + c.oHH;
+          c.oA = c.oWH * c.oHH * 4;
 
           c.x -= c.isVerticalOnly ? 0 : dX;
           c.y -= c.isVerticalOnly ? dY : 0;
 
-          c.t = this.scaleChanged ? 0.5 : 0;
+          // Precompute [x,y] start and end
+          c.x1 = c.x - c.wH;
+          c.x2 = c.x + c.wH;
+          c.y1 = c.y - c.hH;
+          c.y2 = c.y + c.hH;
+
+          c.t = this.scaleChanged ? 0.25 : 0;
+
+          c.borderWidth = borderWidth;
 
           if (cluster.isChanged || newResScale) {
             const { width, height } = this.compInsetSize(cluster, finalRes);
@@ -706,7 +755,9 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
           return c;
         }
 
-        const { width, height } = this.compInsetSize(cluster, finalRes);
+        let { width, height } = this.compInsetSize(cluster, finalRes);
+        width += borderWidth * 2;
+        height += borderWidth * 2;
         const oX = (cluster.maxX + cluster.minX) / 2;
         const oY = (cluster.maxY + cluster.minY) / 2;
 
@@ -751,7 +802,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
 
         // Create new Label for the AreaCluster
         const labelCluster = new LabelClusterGallery(cluster.id)
-          .setDim(width, height)
+          .setDim(width, height, borderWidth)
           .setSrc(cluster);
 
         labelCluster.setXY(x, y);
