@@ -33,12 +33,21 @@ function compDimPos() {
     .reduce((sum, member) => sum + member.minX + member.maxX, 0) / (2 * size);
   this.y = this.src.members
     .reduce((sum, member) => sum + member.minY + member.maxY, 0) / (2 * size);
+  this.x1 = this.x - this.wH;
+  this.x2 = this.x + this.wH;
+  this.y1 = this.y - this.hH;
+  this.y2 = this.y + this.hH;
   this.oX = this.x;
   this.oY = this.y;
 
   // Update width and height halfs of the bounding area of the origin
   this.oWH = (this.maxX - this.minX) / 2;
   this.oHH = (this.maxY - this.minY) / 2;
+  this.oX1 = this.oX - this.oWH;
+  this.oX2 = this.oX + this.oWH;
+  this.oY1 = this.oY - this.oHH;
+  this.oY2 = this.oY + this.oHH;
+  this.oA = this.oWH * this.oHH * 4;
 
   return this;
 }
@@ -55,11 +64,16 @@ function disconnect() {
   this.src.disconnect();
 }
 
-function setDim(width, height) {
-  this.width = width;
-  this.height = height;
-  this.wH = width / 2;
-  this.hH = height / 2;
+function setDim(width, height, borderWidth) {
+  if (typeof borderWidth !== 'undefined') {
+    this.borderWidth = borderWidth;
+  }
+  this.width = width + (this.borderWidth * 2);
+  this.height = height + (this.borderWidth * 2);
+  this.wH = this.width / 2;
+  this.hH = this.height / 2;
+  this.a = this.width * this.height;
+
   return this;
 }
 
@@ -76,6 +90,7 @@ function refresh() {
   this.oY = this.src.cY;
   this.oWH = (this.maxX - this.minX) / 2;
   this.oHH = (this.maxY - this.minY) / 2;
+  this.oA = this.oWH * this.oHH * 4;
 
   return this;
 }

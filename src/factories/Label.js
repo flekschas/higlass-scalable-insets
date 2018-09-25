@@ -11,6 +11,8 @@ function Label(id, t = 1.0) {
   // Do not cluster element on disconnect
   this.isDisconnected = false;
 
+  this.borderWidth = 0;
+
   return this;
 }
 
@@ -46,15 +48,28 @@ function setSrc(src) {
   this.oY = this.y;
   this.oWH = (this.maxX - this.minX) / 2;
   this.oHH = (this.maxY - this.minY) / 2;
+  this.oX1 = this.oX - this.oWH;
+  this.oX2 = this.oX + this.oWH;
+  this.oY1 = this.oY - this.oHH;
+  this.oY2 = this.oY + this.oHH;
+  this.oA = this.oWH * this.oHH * 4;
 
   return this;
 }
 
-function setDim(width, height) {
-  this.width = width;
-  this.height = height;
-  this.wH = width / 2;
-  this.hH = height / 2;
+function setDim(width, height, borderWidth) {
+  if (typeof borderWidth !== 'undefined') {
+    this.borderWidth = borderWidth;
+  }
+  this.width = width + (this.borderWidth * 2);
+  this.height = height + (this.borderWidth * 2);
+  this.wH = this.width / 2;
+  this.hH = this.height / 2;
+  this.x1 = this.x - this.wH;
+  this.x2 = this.x + this.wH;
+  this.y1 = this.y - this.hH;
+  this.y2 = this.y + this.hH;
+  this.a = this.wH * this.hH * 4;
 
   return this;
 }
