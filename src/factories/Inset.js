@@ -801,6 +801,7 @@ export default class Inset {
     this.leaderLine = null;
     this.leaderLineStubA = null;
     this.leaderLineStubB = null;
+    this.insetLoadIndicator = null;
     this.imgsRendering = null;
     this.prvsRendering = null;
     this.imgData = null;
@@ -1910,6 +1911,8 @@ export default class Inset {
    * Render the loading indicator
    */
   renderLoadIndicator() {
+    if (this.insetLoadIndicator) return;
+
     const { width, height } = this.border.getBoundingClientRect();
     const dim = min(width / 2, height / 2);
 
@@ -1953,7 +1956,7 @@ export default class Inset {
 
     if (this.insetLoadIndicator) {
       this.border.removeChild(this.insetLoadIndicator);
-      this.insetLoadIndicator = undefined;
+      this.insetLoadIndicator = null;
     }
 
     this.imgsWrapper = document.createElement('div');
