@@ -290,17 +290,14 @@ export default class Inset {
 
     const borderWidthExtra = this.compBorderExtraWidth();
 
-    const finalWidth = width + (2 * borderWidthExtra);
-    const finalHeight = height + (2 * borderWidthExtra);
-
     const finalX = vX;
     const finalY = vY;
 
     this.positionBorder(
       finalX,
       finalY,
-      finalWidth + this.borderPadding,
-      finalHeight + this.borderPadding,
+      width,
+      height,
     );
     this.styleBorder(fill, radius, borderWidthExtra);
   }
@@ -553,9 +550,11 @@ export default class Inset {
    * Compute the truncated endpoints of the leader line
    * @return  {array}  Tuple of the two end points in form of `[x, y]`
    */
-  computerLeaderLineEndpoints(x = this.x, y = this.y) {
+  computerLeaderLineEndpoints(x = this.x, y = this.y, onlyAncor = false) {
+    // We substract `-1` from the width and height to ensure a bit of overlap
+    // by the main inset over the leader line.
     const rectInset = this.computeBorderPosition(
-      x, y, this.width, this.height, 0, true,
+      x, y, this.width - 1, this.height - 1, 0, true,
     );
 
     const pInset = [x, y];
@@ -576,8 +575,11 @@ export default class Inset {
     // the insets and annotation bounding box. In order to get X we clip the
     // path between i and o such that i remains the same and o gets clipped (2).
     // Therefore the new location of i is the clipped point o!
-    const pInsetNew = pOrigin.slice();
-    clip(pInset.slice(), pInsetNew, rectInset);
+    let pInsetNew = pInset;
+    if (!onlyAncor) {
+      pInsetNew = pOrigin.slice();
+      clip(pInset.slice(), pInsetNew, rectInset);
+    }
 
     let pOriginNew = pOrigin;
     if (this.label.src.size === 1) {
@@ -924,14 +926,13 @@ export default class Inset {
     let pointTo = [x, y];
     let dist = lDist(pointFrom, pointTo);
 
-    if (
-      this.leaderLineStubLength * 1.5 < dist ||
-      this.options.leaderLineFading
-    ) {
-      // Calculate the truncated start and end points
-      [pointFrom, pointTo] = this.computerLeaderLineEndpoints(x, y);
-      dist = lDist(pointFrom, pointTo);
-    }
+    const truncateBoth = (
+      (this.options.leaderLineDynamic && this.leaderLineStubLength * 1.5 < dist)
+      || this.options.leaderLineFading
+    );
+
+    [pointFrom, pointTo] = this.computerLeaderLineEndpoints(x, y, truncateBoth);
+    dist = lDist(pointFrom, pointTo);
 
     this.renderLeaderLine(pointFrom, pointTo, dist, color);
   }
