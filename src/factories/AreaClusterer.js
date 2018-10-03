@@ -176,7 +176,6 @@ function clusterElements() {
       !this.elementsAddedToClusters.has(element) &&
       this.isWithin(element.viewPos, true)
     ) {
-      console.log('cluster element', element);
       this.addToOrCreateCluster(element);
     }
   });
