@@ -51,14 +51,13 @@ function getSize() {
  * Add an array of elements to the clusterer.
  *
  * @param  {KeySet}  elements - The elements to be added.
- * @param  {Boolean}  noDraw - If `true` markers are *not* redrawn.
  */
-function add(elements, reDraw = false) {
+function add(elements) {
   elements.forEach((element) => {
     this.elements.add(element);
   });
 
-  if (reDraw) this.clusterElements();
+  this.clusterElements();
 }
 
 function cleanUp(elementsToKeep, reDraw = false) {
@@ -177,6 +176,7 @@ function clusterElements() {
       !this.elementsAddedToClusters.has(element) &&
       this.isWithin(element.viewPos, true)
     ) {
+      console.log('cluster element', element);
       this.addToOrCreateCluster(element);
     }
   });
@@ -500,7 +500,7 @@ function shrinkCluster(cluster, element) {
 /**
  * Update the clustering, i.e., add and remove elements and re-cluster if
  *   necessary.
- * @param  {KeySet}  elements - The elements to be added.
+ * @param  {KeySet}  elements - The elements to be updated, i.e., all insets.
  * @param  {number}  zoomed - Determins the zoom stage `-1` refers to zoom
  *   out, `1` refers to zoom in and `0` is no zoom (only panning).
  */
