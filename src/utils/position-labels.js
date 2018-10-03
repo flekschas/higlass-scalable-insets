@@ -152,7 +152,9 @@ const energy = (index, moveX, moveY) => {
     } else {
       // penalty for label-anchor overlap and distance
       plao += xOverlap * yOverlap / ano[i].oA;
-      plad += max(0, (distOpt - d) / distOpt);
+
+      const minD = min(ano[i].oWH, ano[i].oHH) + distOpt;
+      plad += max(0, (minD - d) / minD);
     }
   }
 
@@ -239,7 +241,7 @@ const coolingExp = beta => t => t * beta;
 
 
 // main simulated annealing function
-labeler.start = (nsweeps, beta = 0.8) => {
+labeler.start = (nsweeps, beta = 0.5) => {
   boostWeights();
 
   const m = labHot.length;
