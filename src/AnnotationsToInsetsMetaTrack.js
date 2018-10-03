@@ -845,6 +845,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
 
       if (!(this.tracksDrawingTiles.size % this.annotationTracks.length)) {
         this.buildTree();
+        this.initTree();
       }
     }
 
@@ -872,7 +873,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
      * @param   {number}  options.k  New zoom level.
      */
     zoomHandler({ k }) {
-      this.initTree();
+      // this.initTree();
 
       this.zoomed = ((k > this.currK) * 1) + ((k < this.currK) * -1);
 
