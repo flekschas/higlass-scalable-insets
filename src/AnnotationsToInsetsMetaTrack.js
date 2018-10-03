@@ -42,13 +42,13 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
       this.animate = animate;
       this.options = trackConfig.options;
 
-      this.boostContext = this.options.boostContext || 1;
-      this.boostDetails = this.options.boostDetails || 1;
-      this.boostLocality = this.options.boostLocality || 1;
-      this.boostLayout = this.options.boostLayout || 1;
-      this.boostLayoutInit = this.options.boostLayoutInit || 1;
-      this.bigAnnosBoost = this.options.bigAnnosBoost || 1;
-      this.bigAnnosBoostArea = this.options.bigAnnosBoostArea || Infinity;
+      this.cooling = 0.25 / +this.options.cooling || 1;
+
+      this.boostContext = +this.options.boostContext || 1;
+      this.boostDetails = +this.options.boostDetails || 1;
+      this.boostLocality = +this.options.boostLocality || 1;
+      this.boostLayout = +this.options.boostLayout || 1;
+      this.boostLayoutInit = +this.options.boostLayoutInit || 1;
       this.insetOriginPadding = +this.options.insetOriginPadding || 6;
 
       this.isInit = true;
@@ -571,6 +571,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
               ),
             ),
             0.02,
+            this.cooling,
           );
 
         this.isInit = false;
