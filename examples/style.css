@@ -112,6 +112,10 @@ abbr {
   margin-bottom: 0;
 }
 
+#description .more:hover {
+  cursor: pointer;
+}
+
 #topbar:focus #description p:first-child,
 #topbar:focus-within #description p:first-child {
   margin-bottom: 1rem;
@@ -138,6 +142,7 @@ abbr {
   line-height: 1.5rem;
   height: 1.5rem;
   text-align: center;
+  text-transform: uppercase;
   border-bottom: 0;
   border-radius: 0.2rem;
 }

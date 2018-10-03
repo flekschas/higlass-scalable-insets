@@ -42,8 +42,12 @@ html, body {
   color: #000;
   border-bottom: 1px solid rgba(0, 0, 0, 1);
 }
+
 #description .more {
   color: #bbb;
+}
+#description .more:hover {
+  color: #000;
 }
 
 #links a {
