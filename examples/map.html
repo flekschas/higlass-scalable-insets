@@ -36,6 +36,14 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="style-dark.css">
 
+  <style type="text/css">
+    #topbar {
+      top: 8rem;
+      right: 8rem;
+      left: auto;
+    }
+  </style>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/16.4.2/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.4.2/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.8.2/pixi.min.js"></script>
@@ -98,13 +106,13 @@ const viewConfig = {
                 uid: 'ski-areas',
                 type: 'geo-json',
                 options: {
-                  labelColor: 'red',
+                  labelColor: 'black',
                   labelPosition: 'hidden',
                   trackBorderWidth: 0,
-                  trackBorderColor: 'red',
-                  rectangleDomainFillColor: 'red',
+                  trackBorderColor: 'black',
+                  rectangleDomainFillColor: 'black',
                   rectangleDomainFillOpacity: 0.25,
-                  rectangleDomainStrokeColor: 'red',
+                  rectangleDomainStrokeColor: 'black',
                   rectangleDomainOpacity: 1,
                   rectanlgeMinSize: 3,
                   minSquareSize: 4,
@@ -112,50 +120,55 @@ const viewConfig = {
                   name: 'Ski Areas',
                 },
               },
-              {
-                server: 'https://vcg-higlass.rc.fas.harvard.edu/api/v1/',
-                tilesetUid: 'ski-areas-preloaded',
-                uid: 'insets',
-                type: 'insets',
-                datatype: 'osm-image',
-                options: {
-                  minSize: 32,
-                  maxSize: 72,
-                  sizeStepSize: 2,
-                  scale: 1,
-                  scaleSizeBy: 'size',
-                  additionalZoom: 1,
-                  onClickScale: 3,
-                  fill: 'white',
-                  fillOpacity: 1,
-                  borderColor: 'white',
-                  borderWidth: 2,
-                  borderOpacity: 1,
-                  borderRadius: 4,
-                  leaderLineColor: 'white',
-                  leaderLineWidth: 3,
-                  leaderLineOpacity: 1,
-                  leaderLineFading: {
-                    0: 1,
-                    0.35: 0.33,
-                    0.65: 0.33,
-                    1: 1,
-                  },
-                  leaderLineStubWidthMin: 2,
-                  leaderLineStubWidthMax: 4,
-                  leaderLineStubLength: 12,
-                  leaderLineDynamic: true,
-                  leaderLineDynamicMinDist: 24,
-                  leaderLineDynamicMaxDist: 120,
-                  selectColor: 'red',
-                  dropDistance: 1,
-                  dropBlur: 3,
-                  dropOpacity: 0.8,
-                  opacity: 1,
-                  loadHiResOnScaleUp: true,
-                },
-              },
             ],
+          },
+        ],
+        gallery: [
+          {
+            server: 'https://vcg-higlass.rc.fas.harvard.edu/api/v1/',
+            tilesetUid: 'ski-areas-preloaded',
+            uid: 'insets',
+            type: 'insets',
+            datatype: 'osm-image',
+            width: 120,
+            height: 120,
+            options: {
+              minSize: 24,
+              maxSize: 64,
+              sizeStepSize: 2,
+              scale: 1,
+              scaleSizeBy: 'size',
+              additionalZoom: 1,
+              onClickScale: 2,
+              fill: 'black',
+              fillOpacity: 1,
+              borderColor: 'black',
+              borderWidth: 2,
+              borderOpacity: 1,
+              borderRadius: 4,
+              leaderLineColor: 'black',
+              leaderLineWidth: 3,
+              leaderLineOpacity: 1,
+              leaderLineFading: {
+                0: 1,
+                0.35: 0.33,
+                0.65: 0.33,
+                1: 1,
+              },
+              leaderLineStubWidthMin: 2,
+              leaderLineStubWidthMax: 4,
+              leaderLineStubLength: 12,
+              leaderLineDynamic: true,
+              leaderLineDynamicMinDist: 24,
+              leaderLineDynamicMaxDist: 120,
+              focusColor: '#ff2b00',
+              selectColor: '#ff2b00',
+              dropDistance: 1,
+              dropBlur: 3,
+              dropOpacity: 0.8,
+              opacity: 1,
+              loadHiResOnScaleUp: true,
+            },
           },
         ],
       },
@@ -169,6 +182,7 @@ const viewConfig = {
               'ski-areas',
             ],
             insetThreshold: 64,
+            boostLayoutInit: 10,
           },
         },
       ],
@@ -186,7 +200,7 @@ const viewConfig = {
 window.hglib.createHgComponent(
   document.getElementById('demo'), viewConfig,
   {
-    bounded: true, isDarkTheme: true, horizontalMargin: 0, verticalMargin: 0,
+    bounded: true, horizontalMargin: 0, verticalMargin: 0,
   },
 );
 </script>
