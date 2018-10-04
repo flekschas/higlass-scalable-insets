@@ -63,68 +63,101 @@ let bwLabAnoD = wLabAnoD;
 
 let is1dOnly = false;
 
+// Variables for `energy()`
+let e;
+let m;
+let n;
+let mn;
+let d;
+let dx;
+let dy;
+let minD;
+let pWH;
+let pHH;
+let distOpt;
+let lli;
+let xOverlap;
+let yOverlap;
+let otherLabel;
+let lx;
+let lx1;
+let lx2;
+let ly;
+let ly1;
+let ly2;
+let pd;
+let pm;
+let plli = 0;
+let pllo = 0;
+let plld = 0;
+let plao = 0;
+let ploo = 0;
+let plod = 0;
+let plad = 0;
+
 // energy function, tailored for label placement
 const energy = (index, moveX, moveY) => {
-  const m = labHot.length + labCold.length;
-  const n = ano.length;
-  const mn = max(m, n);
   const l = labHot[index];
-  let ener = 0;
-  const dx = l.x - l.oX;
-  const dy = l.y - l.oY;
-  const dist = Math.sqrt((dx * dx) + (dy * dy));
+
+  m = labHot.length + labCold.length;
+  n = ano.length;
+  mn = max(m, n);
+  e = 0;
+
+  // Compute new x and y positions
+  lx = l.x + moveX;
+  lx1 = lx - l.wH - padding;
+  lx2 = lx + l.wH + padding;
+  ly = l.y + moveY;
+  ly1 = ly - l.hH - padding;
+  ly2 = ly + l.hH + padding;
+
+  dx = lx - l.oX;
+  dy = ly - l.oY;
+  d = Math.sqrt((dx * dx) + (dy * dy));
   // Used for pushing labels away from their own origin if they are too close
-  const pWH = (padding / 2) + l.wH;
-  const pHH = (padding / 2) + l.hH;
+  pWH = (padding / 2) + l.wH;
+  pHH = (padding / 2) + l.hH;
   // Optimal distance, which is the radius from the insets center to the corner
   // of the padded bounding box.
-  const distOpt = Math.sqrt((pWH * pWH) + (pHH * pHH));
-  let overlap = true;
+  distOpt = Math.sqrt((pWH * pWH) + (pHH * pHH));
 
   // penalty for length of leader line
   // normalized by `distOpt`
-  const pd = Math.abs(dist - distOpt) / distOpt;
+  pd = Math.abs(d - distOpt) / distOpt;
 
   // penalty for moving at all
   // normalized by `distOpt`
-  const pm = Math.sqrt((moveX * moveX) + (moveY * moveY)) / distOpt;
+  pm = Math.sqrt((moveX * moveX) + (moveY * moveY)) / distOpt;
 
-  // Need to recompute x and y start and end positions
-  const lx1 = l.x - l.wH - padding;
-  const ly1 = l.y - l.hH - padding;
-  const lx2 = l.x + l.wH + padding;
-  const ly2 = l.y + l.hH + padding;
-
-  let xOverlap;
-  let yOverlap;
-  let pllc = 0;
-  let pllo = 0;
-  let plld = 0;
-  let plao = 0;
-  let ploo = 0;
-  let plod = 0;
-  let plad = 0;
+  plli = 0;
+  pllo = 0;
+  plld = 0;
+  plao = 0;
+  ploo = 0;
+  plod = 0;
+  plad = 0;
 
   for (let labType = 0; labType < 2; labType++) {
     const currLabs = labAll[labType];
     for (let i = 0; i < currLabs.length; i++) {
       if (i === index && labType === 0) continue;  // eslint-disable-line no-continue
 
-      const otherLabel = currLabs[i];
+      otherLabel = currLabs[i];
       // Test if leader lines intersect...
-      overlap = lineSegIntersect(
+      lli = lineSegIntersect(
         l.oX,
-        l.x,
+        lx,
         otherLabel.oX,
         otherLabel.x,
         l.oY,
-        l.y,
+        ly,
         otherLabel.oY,
         otherLabel.y,
       );
 
       // ...and add a penalty if they do
-      if (overlap) pllc++;
+      if (lli) plli++;
 
       // Penalty for label-label overlap
       xOverlap = max(0, min(otherLabel.x2, lx2) - max(otherLabel.x1, lx1));
@@ -132,7 +165,7 @@ const energy = (index, moveX, moveY) => {
       pllo += xOverlap * yOverlap / min(l.a, otherLabel.a);
 
       // Penalty for label-label distance
-      const d = Math.sqrt(((l.x - ano[i].oX) ** 2) + ((l.y - ano[i].oY) ** 2));
+      d = Math.sqrt(((lx - ano[i].oX) ** 2) + ((ly - ano[i].oY) ** 2));
       plld += max(0, (distOpt - d) / distOpt);
     }
   }
@@ -140,10 +173,10 @@ const energy = (index, moveX, moveY) => {
   // For every annotation or label
   // Note: we know that the first m anchors are the label's corresponding
   // origins
-  for (let i = 0; i < mn; i++) {
+  for (let i = m; i < mn; i++) {
     xOverlap = max(0, min(ano[i].oX2, lx2) - max(ano[i].oX1, lx1));
     yOverlap = max(0, min(ano[i].oY2, ly2) - max(ano[i].oY1, ly1));
-    const d = Math.sqrt(((l.x - ano[i].oX) ** 2) + ((l.y - ano[i].oY) ** 2));
+    d = Math.sqrt(((lx - ano[i].oX) ** 2) + ((ly - ano[i].oY) ** 2));
 
     if (i < m) {
       // penalty for label-origin overlap and distance
@@ -153,14 +186,14 @@ const energy = (index, moveX, moveY) => {
       // penalty for label-anchor overlap and distance
       plao += xOverlap * yOverlap / ano[i].oA;
 
-      const minD = min(ano[i].oWH, ano[i].oHH) + distOpt;
+      minD = min(ano[i].oWH, ano[i].oHH) + distOpt;
       plad += max(0, (minD - d) / minD);
     }
   }
 
-  ener = (
+  e = (
     (pd * bwLen)
-    + (pllc * bwInter)
+    + (plli * bwInter)
     + (pllo * bwLabLab)
     + (plld * bwLabLabD)
     + (plao * bwLabAno)
@@ -169,8 +202,17 @@ const energy = (index, moveX, moveY) => {
     + (plod * bwLabOriD)
   );
 
-  return [ener, pm];
+  return [e, pm];
 };
+
+const getRndMove = t => ((2 * Math.random()) - 1) * maxMove * max(0.5, t);
+
+let moveX;
+let moveY;
+let oldEnergy;
+let newEnergy;
+let deltaEnergy;
+let penaltyMove;
 
 // Monte Carlo translation move
 const mcMove = (cooling) => {
@@ -178,41 +220,35 @@ const mcMove = (cooling) => {
   const i = (Math.random() * labHot.length) | 0;  // Bit-wise floor()
   const l = labHot[i];
 
-  // save old coordinates
-  const xOld = l.x;
-  const yOld = l.y;
-
   // old energy: needs to be recalculated becayse new insets might have appeared
   // const oldEnergy = l.e === undefined ? energy(i, 0, 0)[0] : l.e;
-  const oldEnergy = energy(i, 0, 0)[0];
-
-  const getRndMove = () => ((2 * Math.random()) - 1) * maxMove * max(0.5, l.t);
+  oldEnergy = energy(i, 0, 0)[0];
 
   // random translation
-  const moveX = +(((is1dOnly * !l.isVerticalOnly) + !is1dOnly) && getRndMove());
-  const moveY = +(((is1dOnly * !!l.isVerticalOnly) + !is1dOnly) && getRndMove());
-  l.x += moveX;
-  l.y += moveY;
+  moveX = +(((is1dOnly * !l.isVerticalOnly) + !is1dOnly) && getRndMove(l.t));
+  moveY = +(((is1dOnly * !!l.isVerticalOnly) + !is1dOnly) && getRndMove(l.t));
 
   // new energy
-  const [
-    newEnergy,
-    penaltyMove,
-  ] = energy(i, moveX, moveY);
+  [newEnergy, penaltyMove] = energy(i, moveX, moveY);
 
   // delta E
-  const deltaEnergy = oldEnergy - (newEnergy + (penaltyMove * bwMove));
+  deltaEnergy = oldEnergy - (newEnergy + (penaltyMove * bwMove));
 
   // Math.exp(x) where x is positive is always greater than 1. Hence, moves
   // that lower the energy will always be accepted.
-  const r = Math.random();
-  if (deltaEnergy > 0 || Math.exp(deltaEnergy / l.t) > r) {
+  // if (deltaEnergy > 0 || Math.exp(deltaEnergy / l.t) > Math.random();) {
+  if (deltaEnergy > 0) {
     acc += 1;
     l.e = newEnergy;
+
+    // Update x,y positions
+    l.x += moveX;
+    l.x1 += moveX;
+    l.x2 += moveX;
+    l.y += moveY;
+    l.y1 += moveY;
+    l.y2 += moveY;
   } else {
-    // move back to old coordinates
-    l.x = xOld;
-    l.y = yOld;
     rej += 1;
   }
 
@@ -244,11 +280,11 @@ const coolingExp = beta => t => t * beta;
 labeler.start = (nsweeps, beta = 0.5) => {
   boostWeights();
 
-  const m = labHot.length;
+  const numLabHot = labHot.length;
   const cooling = coolingExp(beta);
 
   for (let i = 0; i < nsweeps; i++) {
-    for (let j = 0; j < m; j++) {
+    for (let j = 0; j < numLabHot; j++) {
       mcMove(cooling);
     }
   }
