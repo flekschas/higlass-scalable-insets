@@ -42,7 +42,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
       this.animate = animate;
       this.options = trackConfig.options;
 
-      this.cooling = 0.25 / +this.options.cooling || 1;
+      this.cooling = 0.8 / (+this.options.cooling || 1);
 
       this.boostContext = +this.options.boostContext || 1;
       this.boostDetails = +this.options.boostDetails || 1;
@@ -563,6 +563,8 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
           .boost('context', this.boostContext)
           .boost('details', this.boostDetails)
           .boost('locality', this.boostLocality)
+          // We don't care about movements during the initial layout compute
+          .boost('movement', !this.isInit)
           .start(
             Math.round(
               max(
@@ -570,7 +572,6 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
                 100 * this.boostLayout * boostLayoutInit * Math.log(n) / n,
               ),
             ),
-            0.02,
             this.cooling,
           );
 
@@ -612,9 +613,10 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
         const boostLayoutInit = this.isInit ? this.boostLayoutInit : 1;
 
         positionLabels
-          // Insets, i.e., labels
+          // Hot labels, i.e., insets with a temperature > 0
           .labelsHot(insetsHot.values)
-          .labelsHot(insetsCold.values)
+          // Cold labels, i.e., insets with a temperature == 0
+          .labelsCold(insetsCold.values)
           // We only need the labels origin. Other anchors do not matter as the
           // insets are on the boundary
           .annotations(insets.values)
@@ -625,10 +627,12 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
           )
           .padding(3)
           .is1d()
-          .boost('context', this.boostContext)
-          .boost('contextAnc', this.bigAnnosBoost, this.bigAnnosBoostArea)
-          .boost('details', this.boostDetails)
+          .boost('context', 0)
+          .boost('details', this.boostDetails * 10)
           .boost('locality', this.boostLocality)
+          .boost('leaderlineIntersections', 5)
+          // We don't care about movements during the initial layout compute
+          .boost('movement', !this.isInit)
           .start(
             Math.round(
               max(
@@ -636,6 +640,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
                 100 * this.boostLayout * boostLayoutInit * Math.log(n) / n,
               ),
             ),
+            this.cooling,
           );
 
         this.isInit = false;
@@ -712,11 +717,6 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
           c.oY = newOy;
           c.oWH = (cluster.maxX - cluster.minX) / 2;
           c.oHH = (cluster.maxY - cluster.minY) / 2;
-          c.oX1 = c.oX - c.oWH;
-          c.oX2 = c.oX + c.oWH;
-          c.oY1 = c.oY - c.oHH;
-          c.oY2 = c.oY + c.oHH;
-          c.oA = c.oWH * c.oHH * 4;
 
           c.x -= c.isVerticalOnly ? 0 : dX;
           c.y -= c.isVerticalOnly ? dY : 0;
