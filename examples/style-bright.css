@@ -52,11 +52,11 @@ html, body {
 
 #links a {
   border-bottom: 0;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 #links a:hover {
-  color: #fff;
+  color: #000;
   border-bottom: 0;
   background: rgba(0, 0, 0, 0.2);
 }
