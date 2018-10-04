@@ -16,6 +16,10 @@ function setLeftCloser(isLeftCloser = false) {
 function setXY(x, y) {
   this.x = x;
   this.y = y;
+  this.x1 = this.x - this.wH;
+  this.x2 = this.x + this.wH;
+  this.y1 = this.y - this.hH;
+  this.y2 = this.y + this.hH;
 }
 
 function setOffSet(x, y) {
