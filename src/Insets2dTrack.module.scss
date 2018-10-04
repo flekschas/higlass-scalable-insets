@@ -160,9 +160,7 @@ $slow:   0.6s;
     left: 0;
     background-color: inherit;
     border-radius: inherit;
-    transition: opacity .3s, transform .3s;
-    animation: pulse-init 2s $ease infinite,
-               pulse-animation 2s $ease infinite;
+    animation: pulse-animation 2s $ease infinite;
     z-index: -1;
   }
 }
