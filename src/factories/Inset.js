@@ -550,11 +550,11 @@ export default class Inset {
    * Compute the truncated endpoints of the leader line
    * @return  {array}  Tuple of the two end points in form of `[x, y]`
    */
-  computerLeaderLineEndpoints(x = this.x, y = this.y, onlyAncor = false) {
+  computerLeaderLineEndpoints(x = this.x, y = this.y, truncateBoth = false) {
     // We substract `-1` from the width and height to ensure a bit of overlap
     // by the main inset over the leader line.
     const rectInset = this.computeBorderPosition(
-      x, y, this.width - 1, this.height - 1, 0, true,
+      x, y, this.width - 4, this.height - 4, 0, true,
     );
 
     const pInset = [x, y];
@@ -576,7 +576,7 @@ export default class Inset {
     // path between i and o such that i remains the same and o gets clipped (2).
     // Therefore the new location of i is the clipped point o!
     let pInsetNew = pInset;
-    if (!onlyAncor) {
+    if (truncateBoth) {
       pInsetNew = pOrigin.slice();
       clip(pInset.slice(), pInsetNew, rectInset);
     }
