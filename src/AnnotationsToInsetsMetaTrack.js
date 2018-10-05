@@ -43,6 +43,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
       this.options = trackConfig.options;
 
       this.cooling = 0.8 / (+this.options.cooling || 1);
+      this.reheat = (max(1e-6, min(1, +this.options.reheat)) || 0.05);
 
       this.boostContext = +this.options.boostContext || 1;
       this.boostDetails = +this.options.boostDetails || 1;
@@ -510,7 +511,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
 
             // Only reheat marginally to ensure that subsequent moves are
             // gradually better
-            this.insets[id].t = this.scaleChanged ? 0.05 : 0;
+            this.insets[id].t = this.scaleChanged ? this.reheat : 0;
 
             this.insets[id].borderWidth = borderWidth;
 
@@ -731,7 +732,7 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
 
           // Only reheat marginally to ensure that subsequent moves are
           // gradually better
-          c.t = this.scaleChanged ? 0.05 : 0;
+          c.t = this.scaleChanged ? this.reheat : 0;
 
           c.borderWidth = borderWidth;
 
