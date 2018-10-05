@@ -31,7 +31,7 @@ const wInter = 1.0; // leader line intersection
 const wLabLab = 2.0; // label-label overlap
 const wLabOrg = 2.0; // label-origin overlap
 const wLabAno = 0.5; // label-anchor (i.e., annotations)
-const wMove = 0.2; // restrict random moves
+const wMove = 0.5; // restrict random moves
 const wLabLabD = 0.5; // min distance between labels
 const wLabOriD = 0.5; // min distance between labels and origins
 const wLabAnoD = 0.25; // min distance between labels and other annotations (anchors)
@@ -236,8 +236,7 @@ const mcMove = (cooling) => {
 
   // Math.exp(x) where x is positive is always greater than 1. Hence, moves
   // that lower the energy will always be accepted.
-  // if (deltaEnergy > 0 || Math.exp(deltaEnergy / l.t) > Math.random();) {
-  if (deltaEnergy > 0) {
+  if (deltaEnergy > 0 || Math.exp(deltaEnergy / l.t) > Math.random()) {
     acc += 1;
     l.e = newEnergy;
 
