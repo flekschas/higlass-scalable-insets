@@ -92,7 +92,7 @@ npm install higlass-scalable-insets
 
 Take a look at [`src/index.html`](src/index.html) for an example.
 
-## Configuration
+## Config
 
 Scalable Insets requires 2 tracks. An _insets_ track, which handles the insets,
 and an _annotations-to-insets_ track, which links all drawn annotations and
