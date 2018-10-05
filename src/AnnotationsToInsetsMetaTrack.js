@@ -508,7 +508,9 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
             this.insets[id].x -= dX;
             this.insets[id].y -= dY;
 
-            this.insets[id].t = this.scaleChanged ? 0.25 : 0;
+            // Only reheat marginally to ensure that subsequent moves are
+            // gradually better
+            this.insets[id].t = this.scaleChanged ? 0.05 : 0;
 
             this.insets[id].borderWidth = borderWidth;
 
@@ -727,7 +729,9 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
           c.y1 = c.y - c.hH;
           c.y2 = c.y + c.hH;
 
-          c.t = this.scaleChanged ? 0.25 : 0;
+          // Only reheat marginally to ensure that subsequent moves are
+          // gradually better
+          c.t = this.scaleChanged ? 0.05 : 0;
 
           c.borderWidth = borderWidth;
 
