@@ -12,6 +12,10 @@
     "ecmaFeatures": {},
     "ecmaVersion": 6
   },
+  "globals": {
+    "DEPENDENCIES": false,
+    "VERSION": false
+  },
   "plugins": [],
   "rules": {
     "class-methods-use-this": 0,
