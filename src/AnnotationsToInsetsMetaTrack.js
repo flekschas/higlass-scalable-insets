@@ -37,10 +37,11 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
 
 
   class AnnotationsToInsetsMetaTrackClass {
-    constructor(trackConfig, getTrackByUid, animate) {
-      this.getTrackByUid = getTrackByUid;
+    constructor(context, options) {
+      const { definition, getTrackObject, onNewTilesLoaded: animate } = context;
+
       this.animate = animate;
-      this.options = trackConfig.options;
+      this.options = options;
 
       this.cooling = 0.8 / (+this.options.cooling || 1);
       this.reheat = (max(1e-6, min(1, +this.options.reheat)) || 0.05);
@@ -54,12 +55,12 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
 
       this.isInit = true;
 
-      this.insetsTrack = getTrackByUid(trackConfig.insetsTrack);
+      this.insetsTrack = getTrackObject(definition.insetsTrack);
 
       if (!this.insetsTrack) {
         console.warn(
-          `Insets track (uid: ${trackConfig.insetsTrack}) not found`,
-          trackConfig.insetsTrack,
+          `Insets track (uid: ${definition.insetsTrack}) not found`,
+          definition.insetsTrack,
         );
         return;
       }
@@ -71,9 +72,9 @@ const AnnotationsToInsetsMetaTrack = (HGC, ...args) => {
 
       this.annotationTrackIds = new Set();
       this.annotationTrackIdsExcluded = new Set();
-      this.annotationTracks = trackConfig.options.annotationTracks
+      this.annotationTracks = definition.options.annotationTracks
         .map((uid) => {
-          const track = getTrackByUid(uid);
+          const track = getTrackObject(uid);
 
           if (!track) {
             console.warn(`Child track (uid: ${uid}) not found`);
@@ -921,5 +922,8 @@ AnnotationsToInsetsMetaTrack.config = {
     boostLayoutInit: 1,
   },
 };
+
+AnnotationsToInsetsMetaTrack.version = VERSION;
+AnnotationsToInsetsMetaTrack.dependencies = DEPENDENCIES;
 
 export default AnnotationsToInsetsMetaTrack;

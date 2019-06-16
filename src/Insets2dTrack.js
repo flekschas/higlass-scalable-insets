@@ -1,6 +1,7 @@
 import { color as d3Color } from 'd3-color';
 import { scaleLinear, scaleLog } from 'd3-scale';
 import { DropShadowFilter } from '@pixi/filter-drop-shadow';
+import createPubSub from 'pub-sub-es';
 
 import { Inset, KeySet } from './factories';
 
@@ -26,7 +27,7 @@ const Insets2dTrack = (HGC, ...args) => {
   const { DataFetcher } = HGC.factories;
 
   // Services
-  const { chromInfo, pubSub, pubSubCreate } = HGC.services;
+  const { chromInfo, pubSub } = HGC.services;
 
   // Utils
   const {
@@ -45,34 +46,34 @@ const Insets2dTrack = (HGC, ...args) => {
   } = HGC.utils;
 
   class Insets2dTrackClass extends HGC.tracks.PixiTrack {
-    constructor(
-      scene,
-      trackConfig,
-      dataConfig,
-      handleTilesetInfoReceived,
-      animate,
-      baseEl,
-    ) {
-      super(scene, trackConfig.options);
+    constructor(context, options) {
+      super(context, options);
+
+      const {
+        definition,
+        dataConfig,
+        animate,
+        baseEl,
+      } = context;
 
       this.isAugmentationTrack = true;
 
       this.parentElement = baseEl;
       this.dataConfig = dataConfig;
-      this.dataType = trackConfig.dataType || trackConfig.datatype;
-      this.options = trackConfig.options;
+      this.dataType = definition.dataType || definition.datatype;
+      this.options = definition.options;
       this.animate = animate;
       // Needed for the gallery view
       this.positioning = {
-        location: trackConfig.position,
-        width: trackConfig.width,
-        height: trackConfig.height,
-        offsetX: trackConfig.offsetX,
-        offsetY: trackConfig.offsetY,
-        offsetTop: trackConfig.offsetTop,
-        offsetRight: trackConfig.offsetRight,
-        offsetBottom: trackConfig.offsetBottom,
-        offsetLeft: trackConfig.offsetLeft,
+        location: definition.position,
+        width: definition.width,
+        height: definition.height,
+        offsetX: definition.offsetX,
+        offsetY: definition.offsetY,
+        offsetTop: definition.offsetTop,
+        offsetRight: definition.offsetRight,
+        offsetBottom: definition.offsetBottom,
+        offsetLeft: definition.offsetLeft,
       };
 
       // Merge the tilesetUids for the primary and secondary data sources.
@@ -83,7 +84,7 @@ const Insets2dTrack = (HGC, ...args) => {
       // not available.
       this.dataConfig.tilesetUids = [
         this.dataConfig.tilesetUid,
-        trackConfig.tilesetUidSecondary || '',
+        definition.tilesetUidSecondary || '',
       ].join(',');
 
       if (!this.dataType) {
@@ -121,7 +122,7 @@ const Insets2dTrack = (HGC, ...args) => {
       this.positioning.offsetLeftTrack = this.positioning.offsetLeftTrack || 0;
 
       this.fetchChromInfo = this.dataType === 'cooler'
-        ? chromInfo.get(trackConfig.chromInfoPath)
+        ? chromInfo.get(definition.chromInfoPath)
         : undefined;
 
       this.dropShadow = new DropShadowFilter({
@@ -159,7 +160,7 @@ const Insets2dTrack = (HGC, ...args) => {
       );
 
       // Create a custom pubSub interface
-      const { publish, subscribe, unsubscribe } = pubSubCreate({});
+      const { publish, subscribe, unsubscribe } = createPubSub();
       this.publish = publish;
       this.subscribe = subscribe;
       this.unsubscribe = unsubscribe;
@@ -174,7 +175,7 @@ const Insets2dTrack = (HGC, ...args) => {
       this.insetScale = this.options.scale || BASE_SCALE;
       this.insetMaxPreviews = this.options.maxPreviews || INSET_MAX_PREVIEWS;
 
-      this.dataFetcher = new DataFetcher(dataConfig);
+      this.dataFetcher = new DataFetcher(dataConfig, pubSub);
       this.dataFetcher.tilesetInfo((tilesetInfo) => {
         if (tilesetInfo.error) {
           console.error(
@@ -749,5 +750,8 @@ Insets2dTrack.config = {
     'sizeStepSize',
   ],
 };
+
+Insets2dTrack.version = VERSION;
+Insets2dTrack.dependencies = DEPENDENCIES;
 
 export default Insets2dTrack;

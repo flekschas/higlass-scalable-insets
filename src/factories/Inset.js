@@ -390,7 +390,7 @@ export default class Inset {
       'contextmenu', this.mouseClickRightHandlerBound,
     );
     this.border.addEventListener(
-      'wheel', this.mouseWheelHandlerBound,
+      'wheel', this.mouseWheelHandlerBound, { passive: false },
     );
     // Unfortunately D3's zoom behavior is too aggressive and kills all local
     // mouseup event, which is why we have to listen for a global mouse up even
@@ -1153,6 +1153,8 @@ export default class Inset {
         this.renderLoadIndicator();
         this.inFlight = this.fetchData(isHiRes)
           .then((data) => {
+            if (this.options.placementOnly) return Promise.resolve();
+
             if (
               this.isDestroyed || data.requestId !== this.fetching
             ) return Promise.resolve();
@@ -1325,6 +1327,8 @@ export default class Inset {
       '&dt=', dtype,
       ignoreDiag,
     ].join('');
+
+    if (this.options.placementOnly) return Promise.resolve();
 
     return fetch(
       url,
@@ -1740,11 +1744,11 @@ export default class Inset {
     this.mouseDownRight = true;
     this.mouseHandler.mouseDownRight(event, this);
     this.mouseClickRightHandler(event);
-    console.log(
-      `Annotation: ${this.id} |`,
-      `Remote pos: ${this.remotePos.join(', ')} |`,
-      `Ideal zoom level for snippet: ${this.computeZoom()}`,
-    );
+    // console.log(
+    //   `Annotation: ${this.id} |`,
+    //   `Remote pos: ${this.remotePos.join(', ')} |`,
+    //   `Ideal zoom level for snippet: ${this.computeZoom()}`,
+    // );
   }
 
   /**
@@ -1920,10 +1924,15 @@ export default class Inset {
     this.insetLoadIndicator.className = style['inset-load-indicator'];
 
     const pulser = document.createElement('div');
-    pulser.className = style['inset-pulser'];
-    pulser.style.width = `${dim}px`;
-    pulser.style.height = `${dim}px`;
-    pulser.style.background = this.loaderColor;
+    if (this.options.loadIndicator === 'image') {
+      pulser.className = style['inset-schematic-image'];
+      this.insetLoadIndicator.style.background = 'white';
+    } else {
+      pulser.className = style['inset-pulser'];
+      pulser.style.width = `${dim}px`;
+      pulser.style.height = `${dim}px`;
+      pulser.style.background = this.loaderColor;
+    }
     this.insetLoadIndicator.appendChild(pulser);
 
     this.border.appendChild(this.insetLoadIndicator);

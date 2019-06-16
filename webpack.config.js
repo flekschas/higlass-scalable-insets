@@ -1,12 +1,41 @@
 const path = require('path');
 
 const autoprefixer = require('autoprefixer');
+const webpack = require('webpack');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const UnminifiedWebpackPlugin = require('unminified-webpack-plugin');
 const flexbugs = require('postcss-flexbugs-fixes');
+
+const packageJson = require('./package.json');
+
+const hgDependencies = (() => {
+  if (packageJson.hgDependencies) {
+    return packageJson.hgDependencies;
+  }
+
+  if (packageJson.devDependencies) {
+    return Object.keys(packageJson.devDependencies)
+      .filter(dependency => dependency.indexOf('higlass') === 0)
+      .reduce((dependencies, dependency) => {
+        dependencies[dependency] = packageJson.devDependencies[dependency];
+        return dependencies;
+      }, {});
+  }
+
+  if (packageJson.dependencies) {
+    return Object.keys(packageJson.dependencies)
+      .filter(dependency => dependency.indexOf('higlass') === 0)
+      .reduce((dependencies, dependency) => {
+        dependencies[dependency] = packageJson.dependencies[dependency];
+        return dependencies;
+      }, {});
+  }
+
+  return {};
+})();
 
 module.exports = (envs, argv) => ({
   output: {
@@ -17,7 +46,7 @@ module.exports = (envs, argv) => ({
   },
   devServer: {
     contentBase: [
-      path.join(__dirname, 'node_modules/higlass/build'),
+      path.join(__dirname, 'node_modules/higlass/dist'),
       path.join(__dirname, 'node_modules/higlass-geojson/dist'),
       path.join(__dirname, 'node_modules/higlass-image/dist'),
       path.join(__dirname, 'examples'),
@@ -111,6 +140,12 @@ module.exports = (envs, argv) => ({
     ],
   },
   plugins: [
+    new webpack.DefinePlugin({
+      VERSION: JSON.stringify(packageJson.version),
+    }),
+    new webpack.DefinePlugin({
+      DEPENDENCIES: JSON.stringify(hgDependencies),
+    }),
     new HtmlWebPackPlugin({
       template: './examples/index.html',
       filename: './index.html',
