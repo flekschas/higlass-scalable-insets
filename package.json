@@ -42,7 +42,7 @@
     "hull.js": "^0.2.10",
     "liang-barsky": "^1.0.1",
     "line-seg-intersect": "^1.0.0",
-    "pub-sub-es": "^1.2.0"
+    "pub-sub-es": "^1.2.1"
   },
   "devDependencies": {
     "autoprefixer": "^9.1.5",
@@ -61,9 +61,9 @@
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.7.0",
     "file-loader": "^1.1.11",
-    "higlass": "1.4.2",
-    "higlass-geojson": "0.3.0-rc.1",
-    "higlass-image": "0.2.0-rc.3",
+    "higlass": "1.5.7",
+    "higlass-geojson": "0.3.0",
+    "higlass-image": "0.2.0",
     "html-webpack-plugin": "^3.1.0",
     "node-sass": "^4.9.3",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
@@ -79,8 +79,8 @@
     "webpack-dev-server": "^3.1.8"
   },
   "hgDependencies": {
-    "higlass": "^1.4.2",
-    "higlass-geojson": "^0.2.0",
-    "higlass-image": "^0.1.2"
+    "higlass": "^1.5.7",
+    "higlass-geojson": "0.3.0",
+    "higlass-image": "0.2.0"
   }
 }
