@@ -3,3 +3,4 @@ dist
 *.zip
 *.log
 *.DS_cache
+*.ipynb_checkpoints
