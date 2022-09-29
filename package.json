@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@pixi/filter-drop-shadow": "^2.6.0",
-    "d3-color": "^1.2.3",
+    "d3-color": "^3.1.0",
     "d3-geo": "^1.11.1",
     "d3-scale": "^2.1.2",
     "fastpriorityqueue": "github:flekschas/FastPriorityQueue.js",
